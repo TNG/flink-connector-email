@@ -23,7 +23,7 @@ spotless {
         importOrder()
         removeUnusedImports()
 
-        eclipse()
+        googleJavaFormat()
     }
 }
 
