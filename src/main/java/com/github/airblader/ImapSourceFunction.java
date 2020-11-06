@@ -12,6 +12,7 @@ import lombok.var;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.table.data.*;
+import org.apache.flink.types.RowKind;
 
 // TODO Catch exceptions (connect, connection closed)
 // TODO Environment variables support
@@ -44,14 +45,21 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         new MessageCountAdapter() {
           @Override
           public void messagesAdded(MessageCountEvent event) {
-            collectMessages(ctx, event.getMessages());
+            collectMessages(ctx, RowKind.INSERT, event.getMessages());
           }
 
-          // TODO Support remove messages
+          @Override
+          public void messagesRemoved(MessageCountEvent event) {
+            if (!connectorOptions.isDeletions()) {
+              return;
+            }
+
+            collectMessages(ctx, RowKind.DELETE, event.getMessages());
+          }
         });
 
     if (connectorOptions.getMode() == ScanMode.ALL) {
-      collectMessages(ctx, folder.getMessages());
+      collectMessages(ctx, RowKind.INSERT, folder.getMessages());
     }
 
     running = true;
@@ -74,18 +82,20 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
   }
 
-  private void collectMessages(SourceContext<RowData> ctx, Message[] messages) {
+  private void collectMessages(SourceContext<RowData> ctx, RowKind rowKind, Message[] messages) {
     for (Message message : messages) {
       try {
-        collectMessage(ctx, message);
+        collectMessage(ctx, rowKind, message);
       } catch (Exception ignored) {
       }
     }
   }
 
-  private void collectMessage(SourceContext<RowData> ctx, Message message)
+  private void collectMessage(SourceContext<RowData> ctx, RowKind rowKind, Message message)
       throws MessagingException {
     var row = new GenericRowData(fieldNames.length);
+    row.setRowKind(rowKind);
+
     for (int i = 0; i < fieldNames.length; i++) {
       switch (fieldNames[i].toUpperCase()) {
         case "SUBJECT":

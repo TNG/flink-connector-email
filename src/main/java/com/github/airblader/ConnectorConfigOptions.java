@@ -50,6 +50,11 @@ class ConnectorConfigOptions {
           .defaultValue(Duration.ofSeconds(1L))
           .withDescription(
               "Duration between polling attempts (only used if IDLE is disabled or unavailable)");
+  public static final ConfigOption<Boolean> DELETIONS =
+      ConfigOptions.key("scan.deletions")
+          .booleanType()
+          .defaultValue(false)
+          .withDescription("Remove deleted emails");
 
   private ConnectorConfigOptions() {}
 }

@@ -7,6 +7,7 @@ import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.SourceFunctionProvider;
+import org.apache.flink.types.RowKind;
 
 @RequiredArgsConstructor
 public class ImapTableSource implements ScanTableSource {
@@ -15,7 +16,12 @@ public class ImapTableSource implements ScanTableSource {
 
   @Override
   public ChangelogMode getChangelogMode() {
-    return ChangelogMode.insertOnly();
+    var changeModeBuilder = ChangelogMode.newBuilder().addContainedKind(RowKind.INSERT);
+    if (connectorOptions.isDeletions()) {
+      changeModeBuilder.addContainedKind(RowKind.DELETE);
+    }
+
+    return changeModeBuilder.build();
   }
 
   @Override

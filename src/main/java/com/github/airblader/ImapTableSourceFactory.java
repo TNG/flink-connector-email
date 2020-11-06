@@ -36,6 +36,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
     options.add(MODE);
     options.add(IDLE);
     options.add(INTERVAL);
+    options.add(DELETIONS);
 
     return options;
   }
@@ -64,6 +65,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .mode(scanMode)
             .idle(factoryHelper.getOptions().get(IDLE))
             .interval(factoryHelper.getOptions().get(INTERVAL))
+            .deletions(factoryHelper.getOptions().get(DELETIONS))
             .build();
 
     return new ImapTableSource(schema, connectorOptions);
