@@ -11,7 +11,7 @@ import org.apache.flink.table.connector.source.SourceFunctionProvider;
 @RequiredArgsConstructor
 public class ImapTableSource implements ScanTableSource {
   private final TableSchema schema;
-  private final ImapConnectorOptions connectorOptions;
+  private final ConnectorOptions connectorOptions;
 
   @Override
   public ChangelogMode getChangelogMode() {

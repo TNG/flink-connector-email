@@ -21,7 +21,7 @@ import org.apache.flink.table.data.*;
 // TODO Checkpointing?
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
-  private final ImapConnectorOptions connectorOptions;
+  private final ConnectorOptions connectorOptions;
   private final String[] fieldNames;
 
   private transient boolean running = false;

@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ImapConnectorOptions implements Serializable {
+public class ConnectorOptions implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String host;
