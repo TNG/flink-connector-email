@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.gradle.spotless' version '4.3.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+allprojects {
+    group 'com.github.airblader'
+    version '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+
+        eclipse()
+    }
+}
+
+configurations {
+    bundledJars
+}
+
+shadowJar {
+    configurations = [project.configurations.bundledJars]
+    relocate 'okhttp3', 'com.github.airblader.shaded.okhttp3'
+    relocate 'okio', 'com.github.airblader.shaded.okio'
+}
+
+dependencies {
+    compileOnly 'org.apache.flink:flink-table-common:1.11.2'
+    compileOnly 'org.apache.flink:flink-table-api-java-bridge_2.12:1.11.2'
+    bundledJars 'com.squareup.okhttp3:okhttp:4.8.0'
+    bundledJars 'com.sun.mail:jakarta.mail:2.0.0'
+
+    testCompile 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.18.0'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    testCompileOnly 'org.projectlombok:lombok:1.18.16'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
+
+    configurations.compileOnly.extendsFrom(configurations.bundledJars)
+}
