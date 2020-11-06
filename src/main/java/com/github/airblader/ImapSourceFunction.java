@@ -7,6 +7,7 @@ import jakarta.mail.event.MessageCountEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
@@ -114,17 +115,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           row.setField(i, mapAddressItems(message.getReplyTo()));
           break;
         case "HEADERS":
-          // TODO Prettify
-          row.setField(
-              i,
-              new GenericArrayData(
-                  Collections.list(message.getAllHeaders()).stream()
-                      .map(
-                          header ->
-                              GenericRowData.of(
-                                  StringData.fromString(header.getName()),
-                                  StringData.fromString(header.getValue())))
-                      .toArray()));
+          row.setField(i, mapHeaders(message.getAllHeaders()));
           break;
         case "FROM":
           row.setField(i, mapAddressItems(message.getFrom()));
@@ -136,6 +127,16 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     ctx.collect(row);
+  }
+
+  private ArrayData mapHeaders(Enumeration<Header> headers) {
+    var headerRows = Collections.list(headers).stream().map(this::mapHeader).toArray();
+    return new GenericArrayData(headerRows);
+  }
+
+  private RowData mapHeader(Header header) {
+    return GenericRowData.of(
+        StringData.fromString(header.getName()), StringData.fromString(header.getValue()));
   }
 
   private ArrayData mapAddressItems(Address[] items) {
