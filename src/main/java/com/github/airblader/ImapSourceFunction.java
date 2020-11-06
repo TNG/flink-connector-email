@@ -1,13 +1,11 @@
 package com.github.airblader;
 
+import static com.github.airblader.MessageUtils.*;
+
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
@@ -127,42 +125,6 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     ctx.collect(row);
-  }
-
-  private ArrayData mapHeaders(Enumeration<Header> headers) {
-    var headerRows = Collections.list(headers).stream().map(this::mapHeader).toArray();
-    return new GenericArrayData(headerRows);
-  }
-
-  private RowData mapHeader(Header header) {
-    return GenericRowData.of(
-        StringData.fromString(header.getName()), StringData.fromString(header.getValue()));
-  }
-
-  private ArrayData mapAddressItems(Address[] items) {
-    if (items == null) {
-      return null;
-    }
-
-    var mappedItems =
-        Arrays.stream(items).map(Address::toString).map(StringData::fromString).toArray();
-    return new GenericArrayData(mappedItems);
-  }
-
-  private String getMessageContent(Message message) {
-    try {
-      var content = message.getContent();
-      if (content == null) {
-        return null;
-      }
-
-      if (content instanceof String) {
-        return (String) content;
-      }
-    } catch (IOException | MessagingException ignored) {
-    }
-
-    return null;
   }
 
   private Properties getImapProperties() {
