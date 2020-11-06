@@ -4,6 +4,7 @@ import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
@@ -129,7 +130,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           row.setField(i, mapAddressItems(message.getFrom()));
           break;
         case "MESSAGE":
-          // TODO Support content
+          row.setField(i, StringData.fromString(getMessageContent(message)));
           break;
       }
     }
@@ -145,6 +146,22 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     var mappedItems =
         Arrays.stream(items).map(Address::toString).map(StringData::fromString).toArray();
     return new GenericArrayData(mappedItems);
+  }
+
+  private String getMessageContent(Message message) {
+    try {
+      var content = message.getContent();
+      if (content == null) {
+        return null;
+      }
+
+      if (content instanceof String) {
+        return (String) content;
+      }
+    } catch (IOException | MessagingException ignored) {
+    }
+
+    return null;
   }
 
   private Properties getImapProperties() {
