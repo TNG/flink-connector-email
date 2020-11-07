@@ -15,8 +15,6 @@ import org.apache.flink.table.data.*;
 import org.apache.flink.types.RowKind;
 
 // TODO Catch exceptions (connect, connection closed)
-// TODO Environment variables support
-// TODO Optionally also support remove message
 // TODO Checkpointing?
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {

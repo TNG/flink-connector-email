@@ -10,21 +10,42 @@ class ConnectorConfigOptions {
           .stringType()
           .noDefaultValue()
           .withDescription("Host for the IMAP server");
+  public static final ConfigOption<String> ENV_HOST =
+      ConfigOptions.key("host.env")
+          .stringType()
+          .noDefaultValue()
+          .withDescription("Environment variable to use to get the hostname (this overrides host)");
   public static final ConfigOption<Integer> PORT =
       ConfigOptions.key("port")
           .intType()
           .noDefaultValue()
           .withDescription("Port for the IMAP server");
+  public static final ConfigOption<String> ENV_PORT =
+      ConfigOptions.key("port.env")
+          .stringType()
+          .noDefaultValue()
+          .withDescription("Environment variable to use to get the port (this overrides port)");
   public static final ConfigOption<String> USER =
       ConfigOptions.key("user")
           .stringType()
           .noDefaultValue()
           .withDescription("Username to authenticate with");
+  public static final ConfigOption<String> ENV_USER =
+      ConfigOptions.key("user.env")
+          .stringType()
+          .noDefaultValue()
+          .withDescription("Environment variable to use to get the username (this overrides user)");
   public static final ConfigOption<String> PASSWORD =
       ConfigOptions.key("password")
           .stringType()
           .noDefaultValue()
           .withDescription("Password to authenticate with");
+  public static final ConfigOption<String> ENV_PASSWORD =
+      ConfigOptions.key("password.env")
+          .stringType()
+          .noDefaultValue()
+          .withDescription(
+              "Environment variable to use to get the password (this overrides password)");
   public static final ConfigOption<Boolean> SSL =
       ConfigOptions.key("ssl").booleanType().defaultValue(true).withDescription("Use SSL");
   public static final ConfigOption<String> FOLDER =
