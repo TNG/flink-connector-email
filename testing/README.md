@@ -11,7 +11,7 @@ You can send an email using
 
 ```
 # Authenticate as jon, send to alice
-echo "Message" | mailx -Sv15-compat -Smta=smtp://jon:1234@localhost:3025 -s"Subject" alice@acme.org
+echo "Message" | mailx -Sv15-compat -Smta=smtp://jon:1234@localhost:3025 -s"Subject" jon@acme.org
 ```
 
 The users "jon", "alice" and "bob" are preconfigured, each with the same password.
