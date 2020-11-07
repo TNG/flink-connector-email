@@ -17,8 +17,6 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.types.RowKind;
 
-// TODO Catch exceptions (connect, connection closed)
-// TODO Property for fetch profile as performance improvement
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
@@ -29,12 +27,15 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private transient Folder folder;
 
   private volatile boolean supportsIdle = true;
+  private FetchProfile fetchProfile;
 
   @Override
   public void open(Configuration parameters) {}
 
   @Override
   public void run(SourceContext<RowData> ctx) throws Exception {
+    fetchProfile = getFetchProfile();
+
     var session = Session.getInstance(getImapProperties(), null);
     store = session.getStore();
     try {
@@ -96,6 +97,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   }
 
   private void collectMessages(SourceContext<RowData> ctx, RowKind rowKind, Message[] messages) {
+    try {
+      folder.fetch(messages, fetchProfile);
+    } catch (MessagingException ignored) {
+    }
+
     for (Message message : messages) {
       try {
         collectMessage(ctx, rowKind, message);
@@ -161,6 +167,12 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     return props;
+  }
+
+  private FetchProfile getFetchProfile() {
+    var fetchProfile = new FetchProfile();
+    fetchProfile.add(FetchProfile.Item.ENVELOPE);
+    return fetchProfile;
   }
 
   private void enterWaitLoop() throws Exception {
