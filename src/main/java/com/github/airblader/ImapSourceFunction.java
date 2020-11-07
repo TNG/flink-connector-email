@@ -11,11 +11,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
-import org.apache.flink.table.data.*;
+import org.apache.flink.table.data.GenericRowData;
+import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.data.StringData;
+import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.types.RowKind;
 
 // TODO Catch exceptions (connect, connection closed)
-// TODO Checkpointing?
+// TODO Property for fetch profile as performance improvement
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
@@ -34,10 +37,22 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   public void run(SourceContext<RowData> ctx) throws Exception {
     var session = Session.getInstance(getImapProperties(), null);
     store = session.getStore();
-    store.connect(connectorOptions.getUser(), connectorOptions.getPassword());
+    try {
+      store.connect(connectorOptions.getUser(), connectorOptions.getPassword());
+    } catch (MessagingException e) {
+      throw new ImapSourceException("Failed to connect to the IMAP server.", e);
+    }
 
-    folder = store.getFolder(connectorOptions.getFolder());
-    folder.open(Folder.READ_ONLY);
+    try {
+      folder = store.getFolder(connectorOptions.getFolder());
+      folder.open(Folder.READ_ONLY);
+    } catch (MessagingException e) {
+      throw new ImapSourceException("Could not open folder " + folder.getName(), e);
+    }
+
+    if (!folder.exists()) {
+      throw new ImapSourceException("Folder " + folder.getName() + " does not exist.");
+    }
 
     folder.addMessageCountListener(
         new MessageCountAdapter() {
@@ -160,8 +175,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         } catch (IllegalStateException ignored) {
         }
       } else {
-        // Trigger some IMAP request to force the server to send a notification
-        folder.getMessageCount();
+        try {
+          // Trigger some IMAP request to force the server to send a notification
+          folder.getMessageCount();
+        } catch (MessagingException ignored) {
+        }
 
         nextReadTimeMs += connectorOptions.getInterval().toMillis();
         Thread.sleep(Math.max(0, nextReadTimeMs - System.currentTimeMillis()));
