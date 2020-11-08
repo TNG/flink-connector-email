@@ -1,9 +1,6 @@
 package com.github.airblader.imap;
 
-import jakarta.mail.Address;
-import jakarta.mail.Header;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
+import jakarta.mail.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,15 +49,25 @@ class MessageUtils {
     return new GenericArrayData(mappedItems);
   }
 
-  public static String getMessageContent(Message message) {
+  public static String getMessageContent(Part part) {
     try {
-      var content = message.getContent();
+      var content = part.getContent();
       if (content == null) {
         return null;
       }
 
       if (content instanceof String) {
         return (String) content;
+      }
+
+      if (part.isMimeType("multipart/*")) {
+        var multiPart = (Multipart) content;
+        for (int i = 0; i < multiPart.getCount(); i++) {
+          var partContent = getMessageContent(multiPart.getBodyPart(i));
+          if (partContent != null) {
+            return partContent;
+          }
+        }
       }
     } catch (IOException | MessagingException ignored) {
     }

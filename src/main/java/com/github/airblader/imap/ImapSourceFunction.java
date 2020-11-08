@@ -21,9 +21,7 @@ import org.apache.flink.types.RowKind;
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 // TODO scan mode with a defined date to start at
-// TODO Wrap to, from only in array if requested as array
 // TODO Add more flags like draft?
-// TODO Support messages with attachments (find proper content)
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
@@ -65,6 +63,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       throw new ImapSourceException("Folder " + folder.getName() + " does not exist.");
     }
 
+    if (connectorOptions.getMode() == ScanMode.ALL) {
+      // FIXME See https://eclipse-ee4j.github.io/mail/FAQ#addlistener
+      collectMessages(ctx, RowKind.INSERT, folder.getMessages());
+    }
+
     folder.addMessageCountListener(
         new MessageCountAdapter() {
           @Override
@@ -81,10 +84,6 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
             collectMessages(ctx, RowKind.DELETE, event.getMessages());
           }
         });
-
-    if (connectorOptions.getMode() == ScanMode.ALL) {
-      collectMessages(ctx, RowKind.INSERT, folder.getMessages());
-    }
 
     running = true;
     enterWaitLoop();
