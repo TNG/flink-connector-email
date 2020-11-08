@@ -166,12 +166,14 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     props.put("mail.store.protocol", "imap");
     props.put("mail.imap.ssl.enable", connectorOptions.isSsl());
     // TODO STARTTLS?
-    props.put("mail.imap.auth", "true");
+    props.put("mail.imap.auth", true);
     props.put("mail.imap.host", connectorOptions.getHost());
     if (connectorOptions.getPort() != null) {
       props.put("mail.imap.port", connectorOptions.getPort());
     }
 
+    props.put("mail.imap.partialfetch", false);
+    props.put("mail.imap.peek", true);
     return props;
   }
 
