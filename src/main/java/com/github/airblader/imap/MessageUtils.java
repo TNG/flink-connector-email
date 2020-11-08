@@ -1,4 +1,4 @@
-package com.github.airblader;
+package com.github.airblader.imap;
 
 import jakarta.mail.Address;
 import jakarta.mail.Header;
@@ -35,6 +35,7 @@ class MessageUtils {
   }
 
   public static String getMessageContent(Message message) {
+    // FIXME Support messages with attachments
     try {
       var content = message.getContent();
       if (content == null) {

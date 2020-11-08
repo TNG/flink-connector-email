@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
-class ConnectorConfigOptions {
+public class ConnectorConfigOptions {
   public static final ConfigOption<String> HOST =
       ConfigOptions.key("host")
           .stringType()

@@ -1,4 +1,4 @@
-package com.github.airblader;
+package com.github.airblader.imap;
 
 public enum ScanMode {
   ALL("all"),

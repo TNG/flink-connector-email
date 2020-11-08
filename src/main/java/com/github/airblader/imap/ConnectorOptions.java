@@ -1,4 +1,4 @@
-package com.github.airblader;
+package com.github.airblader.imap;
 
 import java.io.Serializable;
 import java.time.Duration;

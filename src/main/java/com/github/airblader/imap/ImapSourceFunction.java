@@ -1,6 +1,6 @@
-package com.github.airblader;
+package com.github.airblader.imap;
 
-import static com.github.airblader.MessageUtils.*;
+import static com.github.airblader.imap.MessageUtils.*;
 
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
@@ -9,7 +9,6 @@ import jakarta.mail.event.MessageCountEvent;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
@@ -17,6 +16,12 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.types.RowKind;
 
+// TODO Set connection timeout
+// TODO Make idle catch folder closed errors and reopen
+// TODO idle(false)?
+// TODO Keepalive noop
+// TODO Option to mark emails seen
+// TODO Exactly once semantics
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
@@ -28,9 +33,6 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private volatile boolean supportsIdle = true;
   private FetchProfile fetchProfile;
-
-  @Override
-  public void open(Configuration parameters) {}
 
   @Override
   public void run(SourceContext<RowData> ctx) throws Exception {
@@ -160,6 +162,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     Properties props = new Properties();
     props.put("mail.store.protocol", "imap");
     props.put("mail.imap.ssl.enable", connectorOptions.isSsl());
+    // TODO STARTTLS?
     props.put("mail.imap.auth", "true");
     props.put("mail.imap.host", connectorOptions.getHost());
     if (connectorOptions.getPort() != null) {
