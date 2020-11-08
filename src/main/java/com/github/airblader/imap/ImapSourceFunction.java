@@ -4,8 +4,6 @@ import static com.github.airblader.imap.MessageUtils.*;
 
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
-import jakarta.mail.event.MessageCountAdapter;
-import jakarta.mail.event.MessageCountEvent;
 import java.util.List;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
@@ -68,21 +66,9 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     folder.addMessageCountListener(
-        new MessageCountAdapter() {
-          @Override
-          public void messagesAdded(MessageCountEvent event) {
-            collectMessages(ctx, RowKind.INSERT, event.getMessages());
-          }
-
-          @Override
-          public void messagesRemoved(MessageCountEvent event) {
-            if (!connectorOptions.isDeletions()) {
-              return;
-            }
-
-            collectMessages(ctx, RowKind.DELETE, event.getMessages());
-          }
-        });
+        new MessageCollector(
+            (rowKind, messages) -> collectMessages(ctx, rowKind, messages),
+            connectorOptions.isDeletions()));
 
     running = true;
     enterWaitLoop();
