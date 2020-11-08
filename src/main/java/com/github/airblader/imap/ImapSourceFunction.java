@@ -26,7 +26,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final DataType rowType;
   private final List<String> fieldNames;
 
-  private transient boolean running = false;
+  private transient volatile boolean running = false;
   private transient Store store;
   private transient IMAPFolder folder;
   private transient IdleHeartbeatThread idleHeartbeat;
