@@ -81,6 +81,16 @@ public class ConnectorConfigOptions {
           .booleanType()
           .defaultValue(false)
           .withDescription("Remove deleted emails");
+  public static final ConfigOption<Boolean> HEARTBEAT =
+      ConfigOptions.key("scan.idle.heartbeat")
+          .booleanType()
+          .defaultValue(true)
+          .withDescription("Emit a periodic heartbeat when using idle");
+  public static final ConfigOption<Duration> HEARTBEAT_INTERVAL =
+      ConfigOptions.key("scan.idle.heartbeat.interval")
+          .durationType()
+          .defaultValue(Duration.ofMinutes(15))
+          .withDescription("Frequency of the idle heartbeat");
 
   private ConnectorConfigOptions() {}
 }

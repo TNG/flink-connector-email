@@ -19,6 +19,8 @@ public class ConnectorOptions implements Serializable {
   private final ScanMode mode;
   private final Duration connectionTimeout;
   private final boolean idle;
+  private final boolean heartbeat;
+  private final Duration heartbeatInterval;
   private final Duration interval;
   private final boolean deletions;
 }

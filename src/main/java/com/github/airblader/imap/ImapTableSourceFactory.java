@@ -40,6 +40,8 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
     options.add(MODE);
     options.add(CONNECTION_TIMEOUT);
     options.add(IDLE);
+    options.add(HEARTBEAT);
+    options.add(HEARTBEAT_INTERVAL);
     options.add(INTERVAL);
     options.add(DELETIONS);
 
@@ -72,6 +74,8 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .mode(scanMode)
             .connectionTimeout(factoryHelper.getOptions().get(CONNECTION_TIMEOUT))
             .idle(factoryHelper.getOptions().get(IDLE))
+            .heartbeat(factoryHelper.getOptions().get(HEARTBEAT))
+            .heartbeatInterval(factoryHelper.getOptions().get(HEARTBEAT_INTERVAL))
             .interval(factoryHelper.getOptions().get(INTERVAL))
             .deletions(factoryHelper.getOptions().get(DELETIONS))
             .build();

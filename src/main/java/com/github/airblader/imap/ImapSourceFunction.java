@@ -18,7 +18,6 @@ import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 
-// TODO Keepalive noop
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 // TODO scan mode with a defined date to start at
@@ -33,7 +32,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private transient boolean running = false;
   private transient Store store;
-  private transient Folder folder;
+  private transient IMAPFolder folder;
+  private transient IdleHeartbeatThread idleHeartbeat;
 
   private volatile boolean supportsIdle = true;
   private FetchProfile fetchProfile;
@@ -51,9 +51,13 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     try {
-      folder = store.getFolder(connectorOptions.getFolder());
+      var genericFolder = store.getFolder(connectorOptions.getFolder());
+      folder = (IMAPFolder) genericFolder;
     } catch (MessagingException e) {
       throw new ImapSourceException("Could not get folder " + folder.getName(), e);
+    } catch (ClassCastException e) {
+      throw new ImapSourceException(
+          "Folder " + folder.getName() + " is not an " + IMAPFolder.class.getSimpleName(), e);
     }
 
     openFolder();
@@ -89,6 +93,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   @Override
   public void cancel() {
     running = false;
+    stopIdleHeartbeat();
   }
 
   @Override
@@ -217,14 +222,20 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   }
 
   private void enterWaitLoop() throws Exception {
-    long nextReadTimeMs = System.currentTimeMillis();
+    if (connectorOptions.isIdle() && connectorOptions.isHeartbeat()) {
+      idleHeartbeat = new IdleHeartbeatThread(folder, connectorOptions.getHeartbeatInterval());
+      idleHeartbeat.setDaemon(true);
+      idleHeartbeat.start();
+    }
 
+    long nextReadTimeMs = System.currentTimeMillis();
     while (running) {
       if (connectorOptions.isIdle() && supportsIdle) {
         try {
-          ((IMAPFolder) folder).idle();
+          folder.idle();
         } catch (MessagingException ignored) {
           supportsIdle = false;
+          stopIdleHeartbeat();
         } catch (IllegalStateException ignored) {
           openFolder();
         }
@@ -248,6 +259,12 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       }
     } catch (MessagingException e) {
       throw new ImapSourceException("Could not open folder " + folder.getName(), e);
+    }
+  }
+
+  private void stopIdleHeartbeat() {
+    if (idleHeartbeat != null && idleHeartbeat.isAlive()) {
+      idleHeartbeat.interrupt();
     }
   }
 }
