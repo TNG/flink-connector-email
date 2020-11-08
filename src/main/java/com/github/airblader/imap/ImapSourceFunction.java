@@ -64,8 +64,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     if (connectorOptions.getMode() == ScanMode.ALL) {
-      // FIXME See https://eclipse-ee4j.github.io/mail/FAQ#addlistener
-      collectMessages(ctx, RowKind.INSERT, folder.getMessages());
+      fetchExistingMessages(ctx);
     }
 
     folder.addMessageCountListener(
@@ -106,6 +105,21 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         store.close();
       }
     } catch (MessagingException ignored) {
+    }
+  }
+
+  private void fetchExistingMessages(SourceContext<RowData> ctx) throws MessagingException {
+    int currentNum = 1;
+    int numberOfMessages = folder.getMessageCount();
+
+    // We need to loop to ensure we're not missing any messages coming in while we're processing
+    // these.
+    // See https://eclipse-ee4j.github.io/mail/FAQ#addlistener.
+    while (currentNum <= numberOfMessages) {
+      collectMessages(ctx, RowKind.INSERT, folder.getMessages(currentNum, numberOfMessages));
+
+      currentNum = numberOfMessages + 1;
+      numberOfMessages = folder.getMessageCount();
     }
   }
 
