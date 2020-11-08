@@ -17,11 +17,11 @@ import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.types.RowKind;
 
 // TODO Set connection timeout
-// TODO Make idle catch folder closed errors and reopen
 // TODO idle(false)?
 // TODO Keepalive noop
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
+// TODO scan mode with a defined date to start at
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
@@ -48,11 +48,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
     try {
       folder = store.getFolder(connectorOptions.getFolder());
-      folder.open(Folder.READ_ONLY);
     } catch (MessagingException e) {
-      throw new ImapSourceException("Could not open folder " + folder.getName(), e);
+      throw new ImapSourceException("Could not get folder " + folder.getName(), e);
     }
 
+    openFolder();
     if (!folder.exists()) {
       throw new ImapSourceException("Folder " + folder.getName() + " does not exist.");
     }
@@ -85,7 +85,10 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   @Override
   public void cancel() {
     running = false;
+  }
 
+  @Override
+  public void close() {
     try {
       if (folder != null) {
         folder.close(false);
@@ -184,10 +187,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     while (running) {
       if (connectorOptions.isIdle() && supportsIdle) {
         try {
-          ((IMAPFolder) folder).idle(true);
+          ((IMAPFolder) folder).idle();
         } catch (MessagingException ignored) {
           supportsIdle = false;
         } catch (IllegalStateException ignored) {
+          openFolder();
         }
       } else {
         try {
@@ -199,6 +203,16 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         nextReadTimeMs += connectorOptions.getInterval().toMillis();
         Thread.sleep(Math.max(0, nextReadTimeMs - System.currentTimeMillis()));
       }
+    }
+  }
+
+  private void openFolder() {
+    try {
+      if (!folder.isOpen()) {
+        folder.open(Folder.READ_ONLY);
+      }
+    } catch (MessagingException e) {
+      throw new ImapSourceException("Could not open folder " + folder.getName(), e);
     }
   }
 }
