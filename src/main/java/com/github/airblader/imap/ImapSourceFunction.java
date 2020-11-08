@@ -15,6 +15,7 @@ import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
+import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 
 // TODO Keepalive noop
@@ -23,9 +24,11 @@ import org.apache.flink.types.RowKind;
 // TODO scan mode with a defined date to start at
 // TODO Wrap to, from only in array if requested as array
 // TODO Add more flags like draft?
+// TODO Support messages with attachments (find proper content)
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
+  private final DataType rowType;
   private final List<String> fieldNames;
 
   private transient boolean running = false;
@@ -122,6 +125,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     row.setRowKind(rowKind);
 
     for (int i = 0; i < fieldNames.size(); i++) {
+      var typeRoot = rowType.getChildren().get(i).getLogicalType().getTypeRoot();
+
       switch (fieldNames.get(i).toUpperCase()) {
         case "SUBJECT":
           row.setField(i, StringData.fromString(message.getSubject()));
@@ -133,25 +138,28 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           row.setField(i, TimestampData.fromInstant(message.getReceivedDate().toInstant()));
           break;
         case "TO":
-          row.setField(i, mapAddressItems(message.getRecipients(Message.RecipientType.TO)));
+          row.setField(
+              i, mapAddressItems(message.getRecipients(Message.RecipientType.TO), typeRoot));
           break;
         case "CC":
-          row.setField(i, mapAddressItems(message.getRecipients(Message.RecipientType.CC)));
+          row.setField(
+              i, mapAddressItems(message.getRecipients(Message.RecipientType.CC), typeRoot));
           break;
         case "BCC":
-          row.setField(i, mapAddressItems(message.getRecipients(Message.RecipientType.BCC)));
+          row.setField(
+              i, mapAddressItems(message.getRecipients(Message.RecipientType.BCC), typeRoot));
           break;
         case "RECIPIENTS":
           row.setField(i, mapAddressItems(message.getAllRecipients()));
           break;
         case "REPLYTO":
-          row.setField(i, mapAddressItems(message.getReplyTo()));
+          row.setField(i, mapAddressItems(message.getReplyTo(), typeRoot));
           break;
         case "HEADERS":
           row.setField(i, mapHeaders(message.getAllHeaders()));
           break;
         case "FROM":
-          row.setField(i, mapAddressItems(message.getFrom()));
+          row.setField(i, mapAddressItems(message.getFrom(), typeRoot));
           break;
         case "BYTES":
           row.setField(i, message.getSize());

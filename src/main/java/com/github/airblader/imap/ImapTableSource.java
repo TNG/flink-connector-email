@@ -28,8 +28,9 @@ public class ImapTableSource implements ScanTableSource {
   @Override
   public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
     var fieldNames = Arrays.asList(schema.getFieldNames());
+    var rowType = schema.toRowDataType();
 
-    var sourceFunction = new ImapSourceFunction(connectorOptions, fieldNames);
+    var sourceFunction = new ImapSourceFunction(connectorOptions, rowType, fieldNames);
     return SourceFunctionProvider.of(sourceFunction, false);
   }
 

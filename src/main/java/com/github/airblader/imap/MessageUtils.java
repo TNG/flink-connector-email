@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import lombok.experimental.UtilityClass;
 import lombok.var;
 import org.apache.flink.table.data.*;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
 
 @UtilityClass
 class MessageUtils {
@@ -24,18 +25,34 @@ class MessageUtils {
         StringData.fromString(header.getName()), StringData.fromString(header.getValue()));
   }
 
+  public static Object mapAddressItems(Address[] items, LogicalTypeRoot typeRoot) {
+    if (items == null) {
+      return null;
+    }
+
+    return typeRoot.equals(LogicalTypeRoot.ARRAY) && items.length >= 1
+        ? mapAddressItems(items)
+        : mapAddressItem(items[0]);
+  }
+
+  public static StringData mapAddressItem(Address item) {
+    if (item == null) {
+      return null;
+    }
+
+    return StringData.fromString(item.toString());
+  }
+
   public static ArrayData mapAddressItems(Address[] items) {
     if (items == null) {
       return null;
     }
 
-    var mappedItems =
-        Arrays.stream(items).map(Address::toString).map(StringData::fromString).toArray();
+    var mappedItems = Arrays.stream(items).map(MessageUtils::mapAddressItem).toArray();
     return new GenericArrayData(mappedItems);
   }
 
   public static String getMessageContent(Message message) {
-    // FIXME Support messages with attachments
     try {
       var content = message.getContent();
       if (content == null) {
