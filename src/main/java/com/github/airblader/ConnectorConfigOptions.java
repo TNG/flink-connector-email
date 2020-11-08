@@ -59,6 +59,11 @@ public class ConnectorConfigOptions {
           .defaultValue("latest")
           .withDescription(
               "'all' = Initially fetch all emails in the folder, 'latest' = Only observe changes in the folder");
+  public static final ConfigOption<Duration> CONNECTION_TIMEOUT =
+      ConfigOptions.key("scan.startup.timeout")
+          .durationType()
+          .defaultValue(Duration.ofSeconds(60))
+          .withDescription("Socket connection timeout");
   public static final ConfigOption<Boolean> IDLE =
       ConfigOptions.key("scan.idle")
           .booleanType()

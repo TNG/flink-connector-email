@@ -38,6 +38,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
     options.add(SSL);
     options.add(FOLDER);
     options.add(MODE);
+    options.add(CONNECTION_TIMEOUT);
     options.add(IDLE);
     options.add(INTERVAL);
     options.add(DELETIONS);
@@ -69,6 +70,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .ssl(factoryHelper.getOptions().get(SSL))
             .folder(factoryHelper.getOptions().get(FOLDER))
             .mode(scanMode)
+            .connectionTimeout(factoryHelper.getOptions().get(CONNECTION_TIMEOUT))
             .idle(factoryHelper.getOptions().get(IDLE))
             .interval(factoryHelper.getOptions().get(INTERVAL))
             .deletions(factoryHelper.getOptions().get(DELETIONS))

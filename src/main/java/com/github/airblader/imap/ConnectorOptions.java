@@ -17,6 +17,7 @@ public class ConnectorOptions implements Serializable {
   private final boolean ssl;
   private final String folder;
   private final ScanMode mode;
+  private final Duration connectionTimeout;
   private final boolean idle;
   private final Duration interval;
   private final boolean deletions;

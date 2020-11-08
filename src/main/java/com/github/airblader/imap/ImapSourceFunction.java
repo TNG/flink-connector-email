@@ -16,8 +16,6 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.types.RowKind;
 
-// TODO Set connection timeout
-// TODO idle(false)?
 // TODO Keepalive noop
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
@@ -172,6 +170,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       props.put("mail.imap.port", connectorOptions.getPort());
     }
 
+    props.put("mail.imap.connectiontimeout", connectorOptions.getConnectionTimeout().toMillis());
     props.put("mail.imap.partialfetch", false);
     props.put("mail.imap.peek", true);
     return props;
