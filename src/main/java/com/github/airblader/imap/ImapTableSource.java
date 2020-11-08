@@ -1,5 +1,6 @@
 package com.github.airblader.imap;
 
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.apache.flink.table.api.TableSchema;
@@ -26,7 +27,7 @@ public class ImapTableSource implements ScanTableSource {
 
   @Override
   public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
-    var fieldNames = schema.getFieldNames();
+    var fieldNames = Arrays.asList(schema.getFieldNames());
 
     var sourceFunction = new ImapSourceFunction(connectorOptions, fieldNames);
     return SourceFunctionProvider.of(sourceFunction, false);

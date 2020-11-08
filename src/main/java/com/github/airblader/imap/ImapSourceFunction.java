@@ -6,6 +6,7 @@ import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
+import java.util.List;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
@@ -20,10 +21,12 @@ import org.apache.flink.types.RowKind;
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 // TODO scan mode with a defined date to start at
+// TODO Wrap to, from only in array if requested as array
+// TODO Add more flags like draft?
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
-  private final String[] fieldNames;
+  private final List<String> fieldNames;
 
   private transient boolean running = false;
   private transient Store store;
@@ -115,11 +118,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private void collectMessage(SourceContext<RowData> ctx, RowKind rowKind, Message message)
       throws MessagingException {
-    var row = new GenericRowData(fieldNames.length);
+    var row = new GenericRowData(fieldNames.size());
     row.setRowKind(rowKind);
 
-    for (int i = 0; i < fieldNames.length; i++) {
-      switch (fieldNames[i].toUpperCase()) {
+    for (int i = 0; i < fieldNames.size(); i++) {
+      switch (fieldNames.get(i).toUpperCase()) {
         case "SUBJECT":
           row.setField(i, StringData.fromString(message.getSubject()));
           break;
@@ -150,8 +153,17 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         case "FROM":
           row.setField(i, mapAddressItems(message.getFrom()));
           break;
-        case "MESSAGE":
+        case "BYTES":
+          row.setField(i, message.getSize());
+          break;
+        case "CONTENT_TYPE":
+          row.setField(i, StringData.fromString(message.getContentType()));
+          break;
+        case "CONTENT":
           row.setField(i, StringData.fromString(getMessageContent(message)));
+          break;
+        case "SEEN":
+          row.setField(i, message.getFlags().contains(Flags.Flag.SEEN));
           break;
       }
     }
@@ -180,6 +192,19 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private FetchProfile getFetchProfile() {
     var fetchProfile = new FetchProfile();
     fetchProfile.add(FetchProfile.Item.ENVELOPE);
+
+    if (fieldNames.contains("CONTENT_TYPE") || fieldNames.contains("CONTENT")) {
+      fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
+    }
+
+    if (fieldNames.contains("BYTES")) {
+      fetchProfile.add(FetchProfile.Item.SIZE);
+    }
+
+    if (fieldNames.contains("SEEN")) {
+      fetchProfile.add(FetchProfile.Item.FLAGS);
+    }
+
     return fetchProfile;
   }
 
