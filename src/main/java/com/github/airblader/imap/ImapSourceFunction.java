@@ -6,7 +6,7 @@ import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import java.util.List;
 import java.util.Properties;
-import lombok.RequiredArgsConstructor;
+import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.table.data.GenericRowData;
@@ -19,14 +19,19 @@ import org.apache.flink.types.RowKind;
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 // TODO scan mode with a defined date to start at
-// TODO Add more flags like draft?
 // TODO Allow addresses to be controlled better: support nested structure or property to use
 // address-only?
-@RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
   private final List<String> fieldNames;
   private final DataType rowType;
+
+  public ImapSourceFunction(
+      ConnectorOptions connectorOptions, List<String> fieldNames, DataType rowType) {
+    this.connectorOptions = connectorOptions;
+    this.fieldNames = fieldNames.stream().map(String::toUpperCase).collect(Collectors.toList());
+    this.rowType = rowType;
+  }
 
   private transient volatile boolean running = false;
   private transient Store store;
@@ -133,7 +138,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     for (int i = 0; i < fieldNames.size(); i++) {
       var typeRoot = rowType.getChildren().get(i).getLogicalType().getTypeRoot();
 
-      switch (fieldNames.get(i).toUpperCase()) {
+      switch (fieldNames.get(i)) {
         case "SUBJECT":
           row.setField(i, StringData.fromString(message.getSubject()));
           break;
@@ -179,6 +184,10 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         case "SEEN":
           row.setField(i, message.getFlags().contains(Flags.Flag.SEEN));
           break;
+        case "DRAFT":
+          row.setField(i, message.getFlags().contains(Flags.Flag.DRAFT));
+        case "ANSWERED":
+          row.setField(i, message.getFlags().contains(Flags.Flag.ANSWERED));
       }
     }
 
@@ -214,7 +223,9 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       fetchProfile.add(FetchProfile.Item.SIZE);
     }
 
-    if (fieldNames.contains("SEEN")) {
+    if (fieldNames.contains("SEEN")
+        || fieldNames.contains("DRAFT")
+        || fieldNames.contains("ANSWERED")) {
       fetchProfile.add(FetchProfile.Item.FLAGS);
     }
 
