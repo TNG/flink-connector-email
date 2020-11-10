@@ -20,11 +20,13 @@ import org.apache.flink.types.RowKind;
 // TODO Exactly once semantics
 // TODO scan mode with a defined date to start at
 // TODO Add more flags like draft?
+// TODO Allow addresses to be controlled better: support nested structure or property to use
+// address-only?
 @RequiredArgsConstructor
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
-  private final DataType rowType;
   private final List<String> fieldNames;
+  private final DataType rowType;
 
   private transient volatile boolean running = false;
   private transient Store store;

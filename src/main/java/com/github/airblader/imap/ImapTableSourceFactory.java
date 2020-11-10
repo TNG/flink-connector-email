@@ -80,6 +80,6 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .deletions(factoryHelper.getOptions().get(DELETIONS))
             .build();
 
-    return new ImapTableSource(schema, connectorOptions);
+    return new ImapTableSource(connectorOptions, schema);
   }
 }

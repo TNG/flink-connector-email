@@ -1,19 +1,24 @@
 package com.github.airblader.imap;
 
 import java.util.Arrays;
-import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.SourceFunctionProvider;
+import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushDown;
+import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.types.RowKind;
 
-@RequiredArgsConstructor
-public class ImapTableSource implements ScanTableSource {
-  private final TableSchema schema;
+public class ImapTableSource implements ScanTableSource, SupportsProjectionPushDown {
   private final ConnectorOptions connectorOptions;
+  private TableSchema schema;
+
+  public ImapTableSource(ConnectorOptions connectorOptions, TableSchema schema) {
+    this.connectorOptions = connectorOptions;
+    this.schema = schema;
+  }
 
   @Override
   public ChangelogMode getChangelogMode() {
@@ -30,13 +35,23 @@ public class ImapTableSource implements ScanTableSource {
     var fieldNames = Arrays.asList(schema.getFieldNames());
     var rowType = schema.toRowDataType();
 
-    var sourceFunction = new ImapSourceFunction(connectorOptions, rowType, fieldNames);
+    var sourceFunction = new ImapSourceFunction(connectorOptions, fieldNames, rowType);
     return SourceFunctionProvider.of(sourceFunction, false);
   }
 
   @Override
+  public void applyProjection(int[][] projectedFields) {
+    this.schema = TableSchemaUtils.projectSchema(schema, projectedFields);
+  }
+
+  @Override
+  public boolean supportsNestedProjection() {
+    return false;
+  }
+
+  @Override
   public DynamicTableSource copy() {
-    return new ImapTableSource(schema, connectorOptions);
+    return new ImapTableSource(connectorOptions, schema);
   }
 
   @Override
