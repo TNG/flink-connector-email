@@ -44,6 +44,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
     options.add(HEARTBEAT_INTERVAL);
     options.add(INTERVAL);
     options.add(DELETIONS);
+    options.add(ADDRESS_FORMAT);
 
     return options;
   }
@@ -78,6 +79,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .heartbeatInterval(factoryHelper.getOptions().get(HEARTBEAT_INTERVAL))
             .interval(factoryHelper.getOptions().get(INTERVAL))
             .deletions(factoryHelper.getOptions().get(DELETIONS))
+            .addressFormat(factoryHelper.getOptions().get(ADDRESS_FORMAT))
             .build();
 
     return new ImapTableSource(connectorOptions, schema);

@@ -1,14 +1,13 @@
 package com.github.airblader.imap;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public enum ScanMode {
   ALL("all"),
   LATEST("latest");
 
   private final String value;
-
-  ScanMode(String value) {
-    this.value = value;
-  }
 
   public String getValue() {
     return value;

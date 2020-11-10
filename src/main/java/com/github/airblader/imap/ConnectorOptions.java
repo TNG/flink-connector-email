@@ -23,4 +23,5 @@ public class ConnectorOptions implements Serializable {
   private final Duration heartbeatInterval;
   private final Duration interval;
   private final boolean deletions;
+  private final AddressFormat addressFormat;
 }

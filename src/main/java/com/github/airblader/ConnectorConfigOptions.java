@@ -1,5 +1,6 @@
 package com.github.airblader;
 
+import com.github.airblader.imap.AddressFormat;
 import java.time.Duration;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
@@ -91,6 +92,11 @@ public class ConnectorConfigOptions {
           .durationType()
           .defaultValue(Duration.ofMinutes(15))
           .withDescription("Frequency of the idle heartbeat");
+  public static final ConfigOption<AddressFormat> ADDRESS_FORMAT =
+      ConfigOptions.key("scan.format.address")
+          .enumType(AddressFormat.class)
+          .defaultValue(AddressFormat.DEFAULT)
+          .withDescription("'default' = full address, 'simple' = only email address");
 
   private ConnectorConfigOptions() {}
 }

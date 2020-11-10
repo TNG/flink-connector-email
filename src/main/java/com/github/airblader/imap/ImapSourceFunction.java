@@ -18,9 +18,6 @@ import org.apache.flink.types.RowKind;
 
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
-// TODO scan mode with a defined date to start at
-// TODO Allow addresses to be controlled better: support nested structure or property to use
-// address-only?
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ConnectorOptions connectorOptions;
   private final List<String> fieldNames;
@@ -150,27 +147,43 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           break;
         case "TO":
           row.setField(
-              i, mapAddressItems(message.getRecipients(Message.RecipientType.TO), typeRoot));
+              i,
+              mapAddressItems(
+                  message.getRecipients(Message.RecipientType.TO),
+                  typeRoot,
+                  connectorOptions.getAddressFormat()));
           break;
         case "CC":
           row.setField(
-              i, mapAddressItems(message.getRecipients(Message.RecipientType.CC), typeRoot));
+              i,
+              mapAddressItems(
+                  message.getRecipients(Message.RecipientType.CC),
+                  typeRoot,
+                  connectorOptions.getAddressFormat()));
           break;
         case "BCC":
           row.setField(
-              i, mapAddressItems(message.getRecipients(Message.RecipientType.BCC), typeRoot));
+              i,
+              mapAddressItems(
+                  message.getRecipients(Message.RecipientType.BCC),
+                  typeRoot,
+                  connectorOptions.getAddressFormat()));
           break;
         case "RECIPIENTS":
-          row.setField(i, mapAddressItems(message.getAllRecipients()));
+          row.setField(
+              i, mapAddressItems(message.getAllRecipients(), connectorOptions.getAddressFormat()));
           break;
         case "REPLYTO":
-          row.setField(i, mapAddressItems(message.getReplyTo(), typeRoot));
+          row.setField(
+              i,
+              mapAddressItems(message.getReplyTo(), typeRoot, connectorOptions.getAddressFormat()));
           break;
         case "HEADERS":
           row.setField(i, mapHeaders(message.getAllHeaders()));
           break;
         case "FROM":
-          row.setField(i, mapAddressItems(message.getFrom(), typeRoot));
+          row.setField(
+              i, mapAddressItems(message.getFrom(), typeRoot, connectorOptions.getAddressFormat()));
           break;
         case "BYTES":
           row.setField(i, message.getSize());

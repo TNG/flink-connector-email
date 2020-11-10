@@ -1,6 +1,7 @@
 package com.github.airblader.imap;
 
 import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,31 +23,44 @@ class MessageUtils {
         StringData.fromString(header.getName()), StringData.fromString(header.getValue()));
   }
 
-  public static Object mapAddressItems(Address[] items, LogicalTypeRoot typeRoot) {
+  public static Object mapAddressItems(
+      Address[] items, LogicalTypeRoot typeRoot, AddressFormat format) {
     if (items == null) {
       return null;
     }
 
     return typeRoot.equals(LogicalTypeRoot.ARRAY) && items.length >= 1
-        ? mapAddressItems(items)
-        : mapAddressItem(items[0]);
+        ? mapAddressItems(items, format)
+        : mapAddressItem(items[0], format);
   }
 
-  public static StringData mapAddressItem(Address item) {
+  public static StringData mapAddressItem(Address item, AddressFormat format) {
     if (item == null) {
       return null;
     }
 
-    return StringData.fromString(item.toString());
+    return StringData.fromString(stringifyAddress(item, format));
   }
 
-  public static ArrayData mapAddressItems(Address[] items) {
+  public static ArrayData mapAddressItems(Address[] items, AddressFormat format) {
     if (items == null) {
       return null;
     }
 
-    var mappedItems = Arrays.stream(items).map(MessageUtils::mapAddressItem).toArray();
+    var mappedItems = Arrays.stream(items).map(item -> mapAddressItem(item, format)).toArray();
     return new GenericArrayData(mappedItems);
+  }
+
+  public static String stringifyAddress(Address item, AddressFormat format) {
+    if (item == null) {
+      return null;
+    }
+
+    if (format == AddressFormat.SIMPLE && item instanceof InternetAddress) {
+      return ((InternetAddress) item).getAddress();
+    }
+
+    return item.toString();
   }
 
   public static String getMessageContent(Part part) {
