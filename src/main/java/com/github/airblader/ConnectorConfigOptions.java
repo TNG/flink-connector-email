@@ -49,7 +49,7 @@ public class ConnectorConfigOptions {
   public static final ConfigOption<Boolean> SSL =
       ConfigOptions.key("ssl").booleanType().defaultValue(true).withDescription("Use SSL");
   public static final ConfigOption<String> FOLDER =
-      ConfigOptions.key("folder")
+      ConfigOptions.key("scan.folder")
           .stringType()
           .defaultValue("Inbox")
           .withDescription("Folder for which to list messages");
