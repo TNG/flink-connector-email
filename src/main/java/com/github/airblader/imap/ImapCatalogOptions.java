@@ -52,14 +52,30 @@ public class ImapCatalogOptions implements Serializable {
 
   public Map<String, String> toProperties() {
     Map<String, String> properties = new HashMap<>();
-    properties.put(ConnectorConfigOptions.ENV_HOST.key(), envHost);
-    properties.put(ConnectorConfigOptions.HOST.key(), host);
-    properties.put(ConnectorConfigOptions.ENV_PORT.key(), envPort);
-    properties.put(ConnectorConfigOptions.PORT.key(), port == null ? null : port.toString());
-    properties.put(ConnectorConfigOptions.ENV_USER.key(), envUser);
-    properties.put(ConnectorConfigOptions.USER.key(), user);
-    properties.put(ConnectorConfigOptions.ENV_PASSWORD.key(), envPassword);
-    properties.put(ConnectorConfigOptions.PASSWORD.key(), password);
+    if (envHost != null) {
+      properties.put(ConnectorConfigOptions.ENV_HOST.key(), envHost);
+    }
+    if (host != null) {
+      properties.put(ConnectorConfigOptions.HOST.key(), host);
+    }
+    if (envPort != null) {
+      properties.put(ConnectorConfigOptions.ENV_PORT.key(), envPort);
+    }
+    if (port != null) {
+      properties.put(ConnectorConfigOptions.PORT.key(), port.toString());
+    }
+    if (envUser != null) {
+      properties.put(ConnectorConfigOptions.ENV_USER.key(), envUser);
+    }
+    if (user != null) {
+      properties.put(ConnectorConfigOptions.USER.key(), user);
+    }
+    if (envPassword != null) {
+      properties.put(ConnectorConfigOptions.ENV_PASSWORD.key(), envPassword);
+    }
+    if (password != null) {
+      properties.put(ConnectorConfigOptions.PASSWORD.key(), password);
+    }
     properties.put(ConnectorConfigOptions.SSL.key(), String.valueOf(ssl));
     properties.put(ConnectorConfigOptions.MODE.key(), mode.getValue());
     properties.put(
