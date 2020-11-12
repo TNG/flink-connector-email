@@ -117,7 +117,7 @@ public class ImapCatalog implements Catalog {
                   throw new CatalogException(e);
                 }
               })
-          .map(Folder::getName)
+          .map(Folder::getFullName)
           .collect(Collectors.toList());
     } catch (MessagingException e) {
       throw new CatalogException(e);
