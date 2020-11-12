@@ -1,4 +1,4 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
 import java.util.Arrays;
 import lombok.var;

@@ -1,5 +1,6 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
+import com.github.airblader.imap.AddressFormat;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import java.io.IOException;

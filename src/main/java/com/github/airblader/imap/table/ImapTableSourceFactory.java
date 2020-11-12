@@ -1,8 +1,9 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
+import static com.github.airblader.ConfigOptionsLibrary.*;
 import static com.github.airblader.ConfigUtils.validateOptionOrEnv;
-import static com.github.airblader.ConnectorConfigOptions.*;
 
+import com.github.airblader.imap.ScanMode;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.var;

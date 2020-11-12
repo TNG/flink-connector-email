@@ -1,5 +1,6 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
+import com.github.airblader.imap.catalog.ImapCatalogOptions;
 import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

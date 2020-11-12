@@ -1,5 +1,6 @@
 package com.github.airblader.imap;
 
+import com.github.airblader.imap.catalog.ImapCatalogOptions;
 import java.util.Properties;
 import lombok.experimental.UtilityClass;
 

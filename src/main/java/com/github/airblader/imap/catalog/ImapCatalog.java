@@ -1,8 +1,9 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.catalog;
 
-import static com.github.airblader.ConnectorConfigOptions.FOLDER;
+import static com.github.airblader.ConfigOptionsLibrary.FOLDER;
 import static com.github.airblader.imap.ImapUtils.getImapProperties;
 
+import com.github.airblader.imap.table.ImapTableSourceFactory;
 import jakarta.mail.Folder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;

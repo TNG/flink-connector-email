@@ -1,7 +1,8 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.catalog;
 
-import static com.github.airblader.ConnectorConfigOptions.*;
+import static com.github.airblader.ConfigOptionsLibrary.*;
 
+import com.github.airblader.imap.ScanMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

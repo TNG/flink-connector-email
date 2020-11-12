@@ -1,8 +1,9 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
 import static com.github.airblader.imap.ImapUtils.getImapProperties;
-import static com.github.airblader.imap.MessageUtils.*;
+import static com.github.airblader.imap.table.MessageUtils.*;
 
+import com.github.airblader.imap.ScanMode;
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import java.util.List;

@@ -7,7 +7,7 @@ import org.apache.commons.compress.utils.Sets;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
-public class ConnectorConfigOptions {
+public class ConfigOptionsLibrary {
   public static final ConfigOption<String> HOST =
       ConfigOptions.key("host")
           .stringType()
@@ -141,5 +141,5 @@ public class ConnectorConfigOptions {
           ADDRESS_FORMAT,
           FOLDER);
 
-  private ConnectorConfigOptions() {}
+  private ConfigOptionsLibrary() {}
 }

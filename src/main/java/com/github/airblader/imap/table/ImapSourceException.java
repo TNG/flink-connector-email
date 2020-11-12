@@ -1,4 +1,4 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
 public class ImapSourceException extends RuntimeException {
   public ImapSourceException(String s) {

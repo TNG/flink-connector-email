@@ -1,4 +1,4 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.table;
 
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.MessagingException;

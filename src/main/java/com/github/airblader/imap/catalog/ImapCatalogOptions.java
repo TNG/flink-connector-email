@@ -1,9 +1,11 @@
-package com.github.airblader.imap;
+package com.github.airblader.imap.catalog;
 
 import static com.github.airblader.ConfigUtils.getEffectiveProperty;
 import static org.apache.flink.util.TimeUtils.formatWithHighestUnit;
 
-import com.github.airblader.ConnectorConfigOptions;
+import com.github.airblader.ConfigOptionsLibrary;
+import com.github.airblader.imap.AddressFormat;
+import com.github.airblader.imap.ScanMode;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -53,40 +55,40 @@ public class ImapCatalogOptions implements Serializable {
   public Map<String, String> toProperties() {
     Map<String, String> properties = new HashMap<>();
     if (envHost != null) {
-      properties.put(ConnectorConfigOptions.ENV_HOST.key(), envHost);
+      properties.put(ConfigOptionsLibrary.ENV_HOST.key(), envHost);
     }
     if (host != null) {
-      properties.put(ConnectorConfigOptions.HOST.key(), host);
+      properties.put(ConfigOptionsLibrary.HOST.key(), host);
     }
     if (envPort != null) {
-      properties.put(ConnectorConfigOptions.ENV_PORT.key(), envPort);
+      properties.put(ConfigOptionsLibrary.ENV_PORT.key(), envPort);
     }
     if (port != null) {
-      properties.put(ConnectorConfigOptions.PORT.key(), port.toString());
+      properties.put(ConfigOptionsLibrary.PORT.key(), port.toString());
     }
     if (envUser != null) {
-      properties.put(ConnectorConfigOptions.ENV_USER.key(), envUser);
+      properties.put(ConfigOptionsLibrary.ENV_USER.key(), envUser);
     }
     if (user != null) {
-      properties.put(ConnectorConfigOptions.USER.key(), user);
+      properties.put(ConfigOptionsLibrary.USER.key(), user);
     }
     if (envPassword != null) {
-      properties.put(ConnectorConfigOptions.ENV_PASSWORD.key(), envPassword);
+      properties.put(ConfigOptionsLibrary.ENV_PASSWORD.key(), envPassword);
     }
     if (password != null) {
-      properties.put(ConnectorConfigOptions.PASSWORD.key(), password);
+      properties.put(ConfigOptionsLibrary.PASSWORD.key(), password);
     }
-    properties.put(ConnectorConfigOptions.SSL.key(), String.valueOf(ssl));
-    properties.put(ConnectorConfigOptions.MODE.key(), mode.getValue());
+    properties.put(ConfigOptionsLibrary.SSL.key(), String.valueOf(ssl));
+    properties.put(ConfigOptionsLibrary.MODE.key(), mode.getValue());
     properties.put(
-        ConnectorConfigOptions.CONNECTION_TIMEOUT.key(), formatWithHighestUnit(connectionTimeout));
-    properties.put(ConnectorConfigOptions.IDLE.key(), String.valueOf(idle));
-    properties.put(ConnectorConfigOptions.HEARTBEAT.key(), String.valueOf(heartbeat));
+        ConfigOptionsLibrary.CONNECTION_TIMEOUT.key(), formatWithHighestUnit(connectionTimeout));
+    properties.put(ConfigOptionsLibrary.IDLE.key(), String.valueOf(idle));
+    properties.put(ConfigOptionsLibrary.HEARTBEAT.key(), String.valueOf(heartbeat));
     properties.put(
-        ConnectorConfigOptions.HEARTBEAT_INTERVAL.key(), formatWithHighestUnit(heartbeatInterval));
-    properties.put(ConnectorConfigOptions.INTERVAL.key(), formatWithHighestUnit(interval));
-    properties.put(ConnectorConfigOptions.DELETIONS.key(), String.valueOf(deletions));
-    properties.put(ConnectorConfigOptions.ADDRESS_FORMAT.key(), addressFormat.getValue());
+        ConfigOptionsLibrary.HEARTBEAT_INTERVAL.key(), formatWithHighestUnit(heartbeatInterval));
+    properties.put(ConfigOptionsLibrary.INTERVAL.key(), formatWithHighestUnit(interval));
+    properties.put(ConfigOptionsLibrary.DELETIONS.key(), String.valueOf(deletions));
+    properties.put(ConfigOptionsLibrary.ADDRESS_FORMAT.key(), addressFormat.getValue());
 
     return properties;
   }
