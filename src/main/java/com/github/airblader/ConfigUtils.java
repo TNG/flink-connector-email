@@ -21,26 +21,19 @@ public class ConfigUtils {
     }
   }
 
-  public static String getValueWithEnvOverride(
-      FactoryUtil.TableFactoryHelper factoryHelper,
-      ConfigOption<String> envOption,
-      ConfigOption<String> option) {
-    return getValueWithEnvOverride(factoryHelper, envOption, option, Function.identity());
+  public static String getEffectiveProperty(String envProperty, String property) {
+    return getEffectiveProperty(envProperty, property, Function.identity());
   }
 
-  public static <T> T getValueWithEnvOverride(
-      FactoryUtil.TableFactoryHelper factoryHelper,
-      ConfigOption<String> envOption,
-      ConfigOption<T> option,
-      Function<String, T> parserFn) {
-    var envName = factoryHelper.getOptions().get(envOption);
-    if (envName != null) {
-      var envValue = System.getProperty(envName);
+  public static <T> T getEffectiveProperty(
+      String envProperty, T property, Function<String, T> parser) {
+    if (envProperty != null) {
+      var envValue = System.getProperty(envProperty);
       if (envValue != null) {
-        return parserFn.apply(envValue);
+        return parser.apply(envValue);
       }
     }
 
-    return factoryHelper.getOptions().get(option);
+    return property;
   }
 }

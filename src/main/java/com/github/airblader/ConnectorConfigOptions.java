@@ -2,6 +2,8 @@ package com.github.airblader;
 
 import com.github.airblader.imap.AddressFormat;
 import java.time.Duration;
+import java.util.Set;
+import org.apache.commons.compress.utils.Sets;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
@@ -97,6 +99,47 @@ public class ConnectorConfigOptions {
           .enumType(AddressFormat.class)
           .defaultValue(AddressFormat.DEFAULT)
           .withDescription("'default' = full address, 'simple' = only email address");
+
+  public static final Set<ConfigOption<?>> CATALOG_OPTIONS =
+      Sets.newHashSet(
+          HOST,
+          ENV_HOST,
+          PORT,
+          ENV_PORT,
+          USER,
+          ENV_USER,
+          PASSWORD,
+          ENV_PASSWORD,
+          SSL,
+          MODE,
+          CONNECTION_TIMEOUT,
+          IDLE,
+          INTERVAL,
+          DELETIONS,
+          HEARTBEAT,
+          HEARTBEAT_INTERVAL,
+          ADDRESS_FORMAT);
+
+  public static final Set<ConfigOption<?>> TABLE_OPTIONS =
+      Sets.newHashSet(
+          HOST,
+          ENV_HOST,
+          PORT,
+          ENV_PORT,
+          USER,
+          ENV_USER,
+          PASSWORD,
+          ENV_PASSWORD,
+          SSL,
+          MODE,
+          CONNECTION_TIMEOUT,
+          IDLE,
+          INTERVAL,
+          DELETIONS,
+          HEARTBEAT,
+          HEARTBEAT_INTERVAL,
+          ADDRESS_FORMAT,
+          FOLDER);
 
   private ConnectorConfigOptions() {}
 }

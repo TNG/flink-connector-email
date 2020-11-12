@@ -12,10 +12,10 @@ import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.types.RowKind;
 
 public class ImapTableSource implements ScanTableSource, SupportsProjectionPushDown {
-  private final ConnectorOptions connectorOptions;
+  private final ImapSourceOptions connectorOptions;
   private TableSchema schema;
 
-  public ImapTableSource(ConnectorOptions connectorOptions, TableSchema schema) {
+  public ImapTableSource(ImapSourceOptions connectorOptions, TableSchema schema) {
     this.connectorOptions = connectorOptions;
     this.schema = schema;
   }

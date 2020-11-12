@@ -1,6 +1,5 @@
 package com.github.airblader.imap;
 
-import static com.github.airblader.ConfigUtils.getValueWithEnvOverride;
 import static com.github.airblader.ConfigUtils.validateOptionOrEnv;
 import static com.github.airblader.ConnectorConfigOptions.*;
 
@@ -26,27 +25,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
 
   @Override
   public Set<ConfigOption<?>> optionalOptions() {
-    var options = new HashSet<ConfigOption<?>>();
-    options.add(HOST);
-    options.add(ENV_HOST);
-    options.add(PORT);
-    options.add(ENV_PORT);
-    options.add(USER);
-    options.add(ENV_USER);
-    options.add(PASSWORD);
-    options.add(ENV_PASSWORD);
-    options.add(SSL);
-    options.add(FOLDER);
-    options.add(MODE);
-    options.add(CONNECTION_TIMEOUT);
-    options.add(IDLE);
-    options.add(HEARTBEAT);
-    options.add(HEARTBEAT_INTERVAL);
-    options.add(INTERVAL);
-    options.add(DELETIONS);
-    options.add(ADDRESS_FORMAT);
-
-    return options;
+    return TABLE_OPTIONS;
   }
 
   @Override
@@ -65,11 +44,15 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
 
     var schema = context.getCatalogTable().getSchema();
     var connectorOptions =
-        ConnectorOptions.builder()
-            .host(getValueWithEnvOverride(factoryHelper, ENV_HOST, HOST))
-            .port(getValueWithEnvOverride(factoryHelper, ENV_PORT, PORT, Integer::valueOf))
-            .user(getValueWithEnvOverride(factoryHelper, ENV_USER, USER))
-            .password(getValueWithEnvOverride(factoryHelper, ENV_PASSWORD, PASSWORD))
+        ImapSourceOptions.builder()
+            .host(factoryHelper.getOptions().get(HOST))
+            .envHost(factoryHelper.getOptions().get(ENV_HOST))
+            .port(factoryHelper.getOptions().get(PORT))
+            .envPort(factoryHelper.getOptions().get(ENV_PORT))
+            .user(factoryHelper.getOptions().get(USER))
+            .envUser(factoryHelper.getOptions().get(ENV_USER))
+            .password(factoryHelper.getOptions().get(PASSWORD))
+            .envPassword(factoryHelper.getOptions().get(ENV_PASSWORD))
             .ssl(factoryHelper.getOptions().get(SSL))
             .folder(factoryHelper.getOptions().get(FOLDER))
             .mode(scanMode)

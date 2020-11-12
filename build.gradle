@@ -35,6 +35,11 @@ shadowJar {
     configurations = [project.configurations.bundledJars]
     relocate 'okhttp3', 'com.github.airblader.shaded.okhttp3'
     relocate 'okio', 'com.github.airblader.shaded.okio'
+    relocate 'com.sun.activation', 'com.github.airblader.shaded.com.sun.activation'
+    relocate 'com.sun.mail', 'com.github.airblader.shaded.com.sun.mail'
+    relocate 'jakarta', 'com.github.airblader.shaded.jakarta'
+
+    mergeServiceFiles()
 }
 
 dependencies {

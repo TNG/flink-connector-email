@@ -1,11 +1,11 @@
 package com.github.airblader.imap;
 
+import static com.github.airblader.imap.ImapUtils.getImapProperties;
 import static com.github.airblader.imap.MessageUtils.*;
 
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
@@ -19,12 +19,12 @@ import org.apache.flink.types.RowKind;
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
-  private final ConnectorOptions connectorOptions;
+  private final ImapSourceOptions connectorOptions;
   private final List<String> fieldNames;
   private final DataType rowType;
 
   public ImapSourceFunction(
-      ConnectorOptions connectorOptions, List<String> fieldNames, DataType rowType) {
+      ImapSourceOptions connectorOptions, List<String> fieldNames, DataType rowType) {
     this.connectorOptions = connectorOptions;
     this.fieldNames = fieldNames.stream().map(String::toUpperCase).collect(Collectors.toList());
     this.rowType = rowType;
@@ -42,10 +42,10 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   public void run(SourceContext<RowData> ctx) throws Exception {
     fetchProfile = getFetchProfile();
 
-    var session = Session.getInstance(getImapProperties(), null);
+    var session = Session.getInstance(getImapProperties(connectorOptions), null);
     store = session.getStore();
     try {
-      store.connect(connectorOptions.getUser(), connectorOptions.getPassword());
+      store.connect(connectorOptions.getEffectiveUser(), connectorOptions.getEffectivePassword());
     } catch (MessagingException e) {
       throw new ImapSourceException("Failed to connect to the IMAP server.", e);
     }
@@ -188,7 +188,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         case "BYTES":
           row.setField(i, message.getSize());
           break;
-        case "CONTENT_TYPE":
+        case "CONTENTTYPE":
           row.setField(i, StringData.fromString(message.getContentType()));
           break;
         case "CONTENT":
@@ -205,23 +205,6 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     ctx.collect(row);
-  }
-
-  private Properties getImapProperties() {
-    Properties props = new Properties();
-    props.put("mail.store.protocol", "imap");
-    props.put("mail.imap.ssl.enable", connectorOptions.isSsl());
-    props.put("mail.imap.starttls.enable", true);
-    props.put("mail.imap.auth", true);
-    props.put("mail.imap.host", connectorOptions.getHost());
-    if (connectorOptions.getPort() != null) {
-      props.put("mail.imap.port", connectorOptions.getPort());
-    }
-
-    props.put("mail.imap.connectiontimeout", connectorOptions.getConnectionTimeout().toMillis());
-    props.put("mail.imap.partialfetch", false);
-    props.put("mail.imap.peek", true);
-    return props;
   }
 
   private FetchProfile getFetchProfile() {
