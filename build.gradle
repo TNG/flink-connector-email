@@ -1,12 +1,14 @@
 plugins {
-    id 'java'
-    id 'com.diffplug.gradle.spotless' version '4.3.0'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id "java"
+    id "com.diffplug.gradle.spotless" version "4.3.0"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
+apply from: "${rootDir}/dependencies.gradle"
+
 allprojects {
-    group 'com.github.airblader'
-    version '1.0-SNAPSHOT'
+    group "com.github.airblader"
+    version "1.0-SNAPSHOT"
 
     repositories {
         mavenCentral()
@@ -29,33 +31,36 @@ spotless {
 
 configurations {
     bundledJars
+
+    testImplementation.extendsFrom compileOnly
 }
 
 shadowJar {
     configurations = [project.configurations.bundledJars]
-    relocate 'okhttp3', 'com.github.airblader.shaded.okhttp3'
-    relocate 'okio', 'com.github.airblader.shaded.okio'
-    relocate 'com.sun.activation', 'com.github.airblader.shaded.com.sun.activation'
-    relocate 'com.sun.mail', 'com.github.airblader.shaded.com.sun.mail'
-    relocate 'jakarta', 'com.github.airblader.shaded.jakarta'
+    relocate "okhttp3", "com.github.airblader.shaded.okhttp3"
+    relocate "okio", "com.github.airblader.shaded.okio"
+    relocate "com.sun.activation", "com.github.airblader.shaded.com.sun.activation"
+    relocate "com.sun.mail", "com.github.airblader.shaded.com.sun.mail"
+    relocate "jakarta", "com.github.airblader.shaded.jakarta"
 
     mergeServiceFiles()
 }
 
 dependencies {
-    compileOnly 'org.apache.flink:flink-table-common:1.11.2'
-    compileOnly 'org.apache.flink:flink-table-api-java-bridge_2.12:1.11.2'
-    bundledJars 'com.squareup.okhttp3:okhttp:4.8.0'
-    bundledJars 'com.sun.mail:jakarta.mail:2.0.0'
+    compileOnly "org.apache.flink:flink-table-common:${verFlink}"
+    compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${verFlink}"
+    bundledJars "com.squareup.okhttp3:okhttp:${verOkHttp}"
+    bundledJars "com.sun.mail:jakarta.mail:${verJakarta}"
 
-    testCompile 'junit:junit:4.12'
-    testImplementation 'org.assertj:assertj-core:3.18.0'
+    testCompile "junit:junit:${verJUnit}"
+    testImplementation "org.assertj:assertj-core:${verAssertJ}"
+    testImplementation "com.tngtech.java:junit-dataprovider:${verDataprovider}"
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.16'
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
-    testCompileOnly 'org.projectlombok:lombok:1.18.16'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
+    compileOnly "org.projectlombok:lombok:${verLombok}"
+    annotationProcessor "org.projectlombok:lombok:${verLombok}"
+    testCompileOnly "org.projectlombok:lombok:${verLombok}"
+    testAnnotationProcessor "org.projectlombok:lombok:${verLombok}"
 
     configurations.compileOnly.extendsFrom(configurations.bundledJars)
 }

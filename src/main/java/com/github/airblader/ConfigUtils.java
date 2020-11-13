@@ -1,20 +1,21 @@
 package com.github.airblader;
 
-import java.util.function.Function;
 import lombok.experimental.UtilityClass;
 import lombok.var;
 import org.apache.flink.configuration.ConfigOption;
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.ValidationException;
-import org.apache.flink.table.factories.FactoryUtil;
+
+import java.util.function.Function;
 
 @UtilityClass
 public class ConfigUtils {
   public static <T> void validateOptionOrEnv(
-      FactoryUtil.TableFactoryHelper factoryHelper,
+      ReadableConfig config,
       ConfigOption<T> option,
       ConfigOption<String> envOption) {
-    var value = factoryHelper.getOptions().get(option);
-    var envValue = factoryHelper.getOptions().get(envOption);
+    var value = config.get(option);
+    var envValue = config.get(envOption);
     if (value == null && envValue == null) {
       throw new ValidationException(
           String.format("One of '%s' or '%s' must be set.", option.key(), envOption.key()));

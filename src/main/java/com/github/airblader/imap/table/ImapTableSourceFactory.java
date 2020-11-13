@@ -34,7 +34,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
     var factoryHelper = FactoryUtil.createTableFactoryHelper(this, context);
 
     factoryHelper.validate();
-    validateOptionOrEnv(factoryHelper, HOST, ENV_HOST);
+    validateOptionOrEnv(factoryHelper.getOptions(), HOST, ENV_HOST);
 
     ScanMode scanMode;
     try {
