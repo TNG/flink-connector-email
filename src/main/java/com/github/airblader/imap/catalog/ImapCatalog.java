@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.WatermarkSpec;
 import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.*;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
@@ -160,6 +161,7 @@ public class ImapCatalog implements Catalog {
             .field("seen", DataTypes.BOOLEAN())
             .field("draft", DataTypes.BOOLEAN())
             .field("answered", DataTypes.BOOLEAN())
+            .watermark(new WatermarkSpec("received", "received", DataTypes.TIMESTAMP()))
             .build();
 
     var properties = catalogOptions.toProperties();
