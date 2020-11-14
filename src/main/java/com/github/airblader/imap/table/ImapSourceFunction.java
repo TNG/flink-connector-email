@@ -106,7 +106,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     // We need to loop to ensure we're not missing any messages coming in while we're processing
     // these.
     // See https://eclipse-ee4j.github.io/mail/FAQ#addlistener.
-    while (currentNum <= numberOfMessages) {
+    while (running && currentNum <= numberOfMessages) {
       collectMessages(ctx, RowKind.INSERT, folder.getMessages(currentNum, numberOfMessages));
 
       currentNum = numberOfMessages + 1;
