@@ -1,19 +1,16 @@
 package com.github.airblader;
 
+import java.util.function.Function;
 import lombok.experimental.UtilityClass;
 import lombok.var;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.ValidationException;
 
-import java.util.function.Function;
-
 @UtilityClass
 public class ConfigUtils {
   public static <T> void validateOptionOrEnv(
-      ReadableConfig config,
-      ConfigOption<T> option,
-      ConfigOption<String> envOption) {
+      ReadableConfig config, ConfigOption<T> option, ConfigOption<String> envOption) {
     var value = config.get(option);
     var envValue = config.get(envOption);
     if (value == null && envValue == null) {
