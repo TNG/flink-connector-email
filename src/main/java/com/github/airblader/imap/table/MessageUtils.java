@@ -75,7 +75,7 @@ class MessageUtils {
         return (String) content;
       }
 
-      if (part.isMimeType("multipart/*")) {
+      if (part.isMimeType("multipart/*") && content instanceof Multipart) {
         var multiPart = (Multipart) content;
         for (int i = 0; i < multiPart.getCount(); i++) {
           var partContent = getMessageContent(multiPart.getBodyPart(i));
