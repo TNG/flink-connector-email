@@ -6,10 +6,12 @@ import static com.github.airblader.imap.table.MessageUtils.*;
 import com.github.airblader.imap.ScanMode;
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
+import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.StringData;
@@ -120,10 +122,23 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     } catch (MessagingException ignored) {
     }
 
-    for (Message message : messages) {
-      try {
-        collectMessage(ctx, rowKind, message);
-      } catch (Exception ignored) {
+    synchronized (ctx.getCheckpointLock()) {
+      Instant watermark = null;
+      for (Message message : messages) {
+        try {
+          collectMessage(ctx, rowKind, message);
+
+          var messageTimestamp = message.getReceivedDate().toInstant();
+          watermark =
+              (watermark == null || messageTimestamp.isAfter(watermark))
+                  ? messageTimestamp
+                  : watermark;
+        } catch (Exception ignored) {
+        }
+      }
+
+      if (watermark != null) {
+        ctx.emitWatermark(new Watermark(watermark.toEpochMilli()));
       }
     }
   }
