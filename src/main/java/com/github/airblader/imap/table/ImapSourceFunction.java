@@ -100,17 +100,22 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   }
 
   private void fetchExistingMessages(SourceContext<RowData> ctx) throws MessagingException {
-    int currentNum = 1;
-    int numberOfMessages = folder.getMessageCount();
+    var currentNum = 1;
 
     // We need to loop to ensure we're not missing any messages coming in while we're processing
     // these.
     // See https://eclipse-ee4j.github.io/mail/FAQ#addlistener.
-    while (running && currentNum <= numberOfMessages) {
-      collectMessages(ctx, RowKind.INSERT, folder.getMessages(currentNum, numberOfMessages));
+    while (running) {
+      var numberOfMessages = folder.getMessageCount();
+      if (currentNum >= numberOfMessages) {
+        break;
+      }
 
-      currentNum = numberOfMessages + 1;
-      numberOfMessages = folder.getMessageCount();
+      // TODO Make the batch size configurable
+      var batchEnd = currentNum + Math.min(numberOfMessages - currentNum, 500);
+
+      collectMessages(ctx, RowKind.INSERT, folder.getMessages(currentNum, batchEnd));
+      currentNum = batchEnd + 1;
     }
   }
 
