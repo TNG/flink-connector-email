@@ -12,15 +12,13 @@ import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.table.data.GenericRowData;
-import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.data.StringData;
-import org.apache.flink.table.data.TimestampData;
+import org.apache.flink.table.data.*;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
+// TODO Flag to not ignore errors
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ImapSourceOptions connectorOptions;
   private final List<String> fieldNames;
@@ -152,6 +150,9 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       var typeRoot = rowType.getChildren().get(i).getLogicalType().getTypeRoot();
 
       switch (fieldNames.get(i)) {
+        case "UID":
+          row.setField(i, folder.getUID(message));
+          break;
         case "SUBJECT":
           row.setField(i, StringData.fromString(message.getSubject()));
           break;
@@ -215,8 +216,12 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           break;
         case "DRAFT":
           row.setField(i, message.getFlags().contains(Flags.Flag.DRAFT));
+          break;
         case "ANSWERED":
           row.setField(i, message.getFlags().contains(Flags.Flag.ANSWERED));
+          break;
+        default:
+          throw new ImapSourceException("Unknown field name: " + fieldNames.get(i));
       }
     }
 

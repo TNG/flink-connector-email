@@ -21,6 +21,8 @@ import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.Factory;
+import org.apache.flink.table.types.AtomicDataType;
+import org.apache.flink.table.types.logical.BigIntType;
 
 @RequiredArgsConstructor
 public class ImapCatalog implements Catalog {
@@ -140,6 +142,7 @@ public class ImapCatalog implements Catalog {
 
     var schema =
         TableSchema.builder()
+            .field("uid", new AtomicDataType(new BigIntType(false)))
             .field("subject", DataTypes.STRING())
             .field("sent", DataTypes.TIMESTAMP())
             .field("received", DataTypes.TIMESTAMP())
@@ -161,6 +164,7 @@ public class ImapCatalog implements Catalog {
             .field("seen", DataTypes.BOOLEAN())
             .field("draft", DataTypes.BOOLEAN())
             .field("answered", DataTypes.BOOLEAN())
+            .primaryKey("uid")
             .watermark(new WatermarkSpec("received", "received", DataTypes.TIMESTAMP()))
             .build();
 
