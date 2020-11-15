@@ -20,6 +20,7 @@ The host IP to use in the table properties is essentially localhost, though if y
 
 ```
 CREATE TEMPORARY TABLE Inbox (
+  `uid` BIGINT,
   `subject` STRING,
   `sent` TIMESTAMP(6),
   `received` TIMESTAMP(6),

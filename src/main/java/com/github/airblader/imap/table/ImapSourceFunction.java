@@ -52,14 +52,14 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     try {
       store.connect(connectorOptions.getEffectiveUser(), connectorOptions.getEffectivePassword());
     } catch (MessagingException e) {
-      throw new ImapSourceException("Failed to connect to the IMAP server.", e);
+      throw ImapSourceException.propagate(e);
     }
 
     try {
       var genericFolder = store.getFolder(connectorOptions.getFolder());
       folder = (IMAPFolder) genericFolder;
     } catch (MessagingException e) {
-      throw new ImapSourceException("Could not get folder " + folder.getName(), e);
+      throw ImapSourceException.propagate(e);
     } catch (ClassCastException e) {
       throw new ImapSourceException(
           "Folder " + folder.getName() + " is not an " + IMAPFolder.class.getSimpleName(), e);
@@ -126,7 +126,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private void collectMessages(SourceContext<RowData> ctx, RowKind rowKind, Message[] messages) {
     try {
       folder.fetch(messages, fetchProfile);
-    } catch (MessagingException ignored) {
+    } catch (MessagingException e) {
+      throw ImapSourceException.propagate(e);
     }
 
     synchronized (ctx.getCheckpointLock()) {
@@ -140,7 +141,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
               (watermark == null || messageTimestamp.isAfter(watermark))
                   ? messageTimestamp
                   : watermark;
-        } catch (Exception ignored) {
+        } catch (MessagingException e) {
+          throw ImapSourceException.propagate(e);
         }
       }
 
@@ -258,7 +260,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     return fetchProfile;
   }
 
-  private void enterWaitLoop() throws Exception {
+  private void enterWaitLoop() {
     if (connectorOptions.isIdle() && connectorOptions.isHeartbeat()) {
       idleHeartbeat = new IdleHeartbeatThread(folder, connectorOptions.getHeartbeatInterval());
       idleHeartbeat.setDaemon(true);
@@ -273,18 +275,23 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         } catch (MessagingException ignored) {
           supportsIdle = false;
           stopIdleHeartbeat();
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException e) {
           openFolder();
         }
       } else {
         try {
           // Trigger some IMAP request to force the server to send a notification
           folder.getMessageCount();
-        } catch (MessagingException ignored) {
+        } catch (MessagingException e) {
+          throw ImapSourceException.propagate(e);
         }
 
         nextReadTimeMs += connectorOptions.getInterval().toMillis();
-        Thread.sleep(Math.max(0, nextReadTimeMs - System.currentTimeMillis()));
+        try {
+          Thread.sleep(Math.max(0, nextReadTimeMs - System.currentTimeMillis()));
+        } catch (InterruptedException e) {
+          throw new ImapSourceException("Error while sleeping", e);
+        }
       }
     }
   }
@@ -295,7 +302,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         folder.open(Folder.READ_ONLY);
       }
     } catch (MessagingException e) {
-      throw new ImapSourceException("Could not open folder " + folder.getName(), e);
+      throw ImapSourceException.propagate(e);
     }
   }
 
