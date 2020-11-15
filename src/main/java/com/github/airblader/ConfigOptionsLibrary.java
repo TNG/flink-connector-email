@@ -111,14 +111,7 @@ public class ConfigOptionsLibrary {
           PASSWORD,
           ENV_PASSWORD,
           SSL,
-          MODE,
-          CONNECTION_TIMEOUT,
-          IDLE,
-          INTERVAL,
-          DELETIONS,
-          HEARTBEAT,
-          HEARTBEAT_INTERVAL,
-          ADDRESS_FORMAT);
+          CONNECTION_TIMEOUT);
 
   public static final Set<ConfigOption<?>> TABLE_OPTIONS =
       Sets.newHashSet(

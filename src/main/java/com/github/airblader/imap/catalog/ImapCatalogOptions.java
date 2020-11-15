@@ -4,8 +4,6 @@ import static com.github.airblader.ConfigUtils.getEffectiveProperty;
 import static org.apache.flink.util.TimeUtils.formatWithHighestUnit;
 
 import com.github.airblader.ConfigOptionsLibrary;
-import com.github.airblader.imap.AddressFormat;
-import com.github.airblader.imap.ScanMode;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -27,14 +25,7 @@ public class ImapCatalogOptions implements Serializable {
   private final String envPassword;
   private final String password;
   private final boolean ssl;
-  private final ScanMode mode;
   private final Duration connectionTimeout;
-  private final boolean idle;
-  private final boolean heartbeat;
-  private final Duration heartbeatInterval;
-  private final Duration interval;
-  private final boolean deletions;
-  private final AddressFormat addressFormat;
 
   public String getEffectiveHost() {
     return getEffectiveProperty(envHost, host);
@@ -79,16 +70,8 @@ public class ImapCatalogOptions implements Serializable {
       properties.put(ConfigOptionsLibrary.PASSWORD.key(), password);
     }
     properties.put(ConfigOptionsLibrary.SSL.key(), String.valueOf(ssl));
-    properties.put(ConfigOptionsLibrary.MODE.key(), mode.getValue());
     properties.put(
         ConfigOptionsLibrary.CONNECTION_TIMEOUT.key(), formatWithHighestUnit(connectionTimeout));
-    properties.put(ConfigOptionsLibrary.IDLE.key(), String.valueOf(idle));
-    properties.put(ConfigOptionsLibrary.HEARTBEAT.key(), String.valueOf(heartbeat));
-    properties.put(
-        ConfigOptionsLibrary.HEARTBEAT_INTERVAL.key(), formatWithHighestUnit(heartbeatInterval));
-    properties.put(ConfigOptionsLibrary.INTERVAL.key(), formatWithHighestUnit(interval));
-    properties.put(ConfigOptionsLibrary.DELETIONS.key(), String.valueOf(deletions));
-    properties.put(ConfigOptionsLibrary.ADDRESS_FORMAT.key(), addressFormat.getValue());
 
     return properties;
   }

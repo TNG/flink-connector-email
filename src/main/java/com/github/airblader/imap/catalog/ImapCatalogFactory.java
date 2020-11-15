@@ -2,7 +2,6 @@ package com.github.airblader.imap.catalog;
 
 import static com.github.airblader.ConfigOptionsLibrary.*;
 
-import com.github.airblader.imap.ScanMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.factories.CatalogFactory;
 
@@ -33,13 +31,6 @@ public class ImapCatalogFactory implements CatalogFactory {
     Configuration configuration = new Configuration();
     properties.forEach(configuration::setString);
 
-    ScanMode scanMode;
-    try {
-      scanMode = ScanMode.from(configuration.get(MODE));
-    } catch (IllegalArgumentException e) {
-      throw new ValidationException("Invalid value for " + MODE.key(), e);
-    }
-
     return new ImapCatalog(
         name,
         ImapCatalogOptions.builder()
@@ -52,14 +43,7 @@ public class ImapCatalogFactory implements CatalogFactory {
             .password(configuration.get(PASSWORD))
             .envPassword(configuration.get(ENV_PASSWORD))
             .ssl(configuration.get(SSL))
-            .mode(scanMode)
             .connectionTimeout(configuration.get(CONNECTION_TIMEOUT))
-            .idle(configuration.get(IDLE))
-            .heartbeat(configuration.get(HEARTBEAT))
-            .heartbeatInterval(configuration.get(HEARTBEAT_INTERVAL))
-            .interval(configuration.get(INTERVAL))
-            .deletions(configuration.get(DELETIONS))
-            .addressFormat(configuration.get(ADDRESS_FORMAT))
             .build());
   }
 }
