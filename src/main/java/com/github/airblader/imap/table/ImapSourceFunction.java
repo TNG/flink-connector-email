@@ -115,8 +115,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
         break;
       }
 
-      // TODO Make the batch size configurable
-      var batchEnd = currentNum + Math.min(numberOfMessages - currentNum, 500);
+      var batchEnd =
+          currentNum + Math.min(numberOfMessages - currentNum, connectorOptions.getBatchSize());
 
       collectMessages(ctx, RowKind.INSERT, folder.getMessages(currentNum, batchEnd));
       currentNum = batchEnd + 1;

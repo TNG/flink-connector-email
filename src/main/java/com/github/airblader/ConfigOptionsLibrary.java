@@ -67,6 +67,11 @@ public class ConfigOptionsLibrary {
           .durationType()
           .defaultValue(Duration.ofSeconds(60))
           .withDescription("Socket connection timeout");
+  public static final ConfigOption<Integer> BATCH_SIZE =
+      ConfigOptions.key("scan.startup.batch-size")
+          .intType()
+          .defaultValue(100)
+          .withDescription("Batch size when using startup mode 'all'");
   public static final ConfigOption<Boolean> IDLE =
       ConfigOptions.key("scan.idle")
           .booleanType()
@@ -126,6 +131,7 @@ public class ConfigOptionsLibrary {
           SSL,
           MODE,
           CONNECTION_TIMEOUT,
+          BATCH_SIZE,
           IDLE,
           INTERVAL,
           DELETIONS,

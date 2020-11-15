@@ -58,6 +58,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .folder(factoryHelper.getOptions().get(FOLDER))
             .mode(scanMode)
             .connectionTimeout(factoryHelper.getOptions().get(CONNECTION_TIMEOUT))
+            .batchSize(factoryHelper.getOptions().get(BATCH_SIZE))
             .idle(factoryHelper.getOptions().get(IDLE))
             .heartbeat(factoryHelper.getOptions().get(HEARTBEAT))
             .heartbeatInterval(factoryHelper.getOptions().get(HEARTBEAT_INTERVAL))
