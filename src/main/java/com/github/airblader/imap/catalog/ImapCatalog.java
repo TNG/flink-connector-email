@@ -33,6 +33,10 @@ public class ImapCatalog implements Catalog {
 
   @Override
   public void open() throws CatalogException {
+    if (store != null && store.isConnected()) {
+      return;
+    }
+
     var session = Session.getInstance(getImapProperties(catalogOptions), null);
     try {
       store = session.getStore();
