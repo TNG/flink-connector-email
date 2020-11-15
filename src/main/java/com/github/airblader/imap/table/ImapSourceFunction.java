@@ -12,13 +12,17 @@ import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.table.data.*;
+import org.apache.flink.table.data.GenericRowData;
+import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.data.StringData;
+import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 
 // TODO Option to mark emails seen
 // TODO Exactly once semantics
 // TODO Flag to not ignore errors
+// TODO Logging
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ImapSourceOptions connectorOptions;
   private final List<String> fieldNames;
