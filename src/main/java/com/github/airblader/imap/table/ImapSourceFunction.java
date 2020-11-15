@@ -66,6 +66,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       throw new ImapSourceException("Folder " + folder.getName() + " does not exist.");
     }
 
+    running = true;
     if (connectorOptions.getMode() == ScanMode.ALL) {
       fetchExistingMessages(ctx);
     }
@@ -75,7 +76,6 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
             (rowKind, messages) -> collectMessages(ctx, rowKind, messages),
             connectorOptions.isDeletions()));
 
-    running = true;
     enterWaitLoop();
   }
 
