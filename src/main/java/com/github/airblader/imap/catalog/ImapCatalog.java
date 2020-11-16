@@ -40,7 +40,7 @@ public class ImapCatalog implements Catalog {
     var session = Session.getInstance(getImapProperties(catalogOptions), null);
     try {
       store = session.getStore();
-      store.connect(catalogOptions.getUser(), catalogOptions.getPassword());
+      store.connect(catalogOptions.getEffectiveUser(), catalogOptions.getEffectivePassword());
     } catch (MessagingException e) {
       throw new CatalogException("Failed to connect to the IMAP server: " + e.toString(), e);
     }
