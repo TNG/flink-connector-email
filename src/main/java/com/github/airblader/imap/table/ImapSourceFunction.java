@@ -111,7 +111,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     // See https://eclipse-ee4j.github.io/mail/FAQ#addlistener.
     while (running) {
       var numberOfMessages = folder.getMessageCount();
-      if (currentNum >= numberOfMessages) {
+      if (currentNum > numberOfMessages) {
         break;
       }
 
