@@ -35,7 +35,7 @@ CREATE TEMPORARY TABLE Inbox (
 COMMENT ''
 WITH (
   'connector' = 'imap',
-  'host' = 'localhost', -- e.g. 10.0.11 for microk8s with 'host-access' enabled
+  'host' = 'localhost', -- e.g. 10.0.1.1 for microk8s with 'host-access' enabled
   'port' = '3143',
   'user' = 'jon',
   'password' = '1234',
