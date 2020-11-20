@@ -17,6 +17,11 @@ This provides access to the Flink SQL client which is preconfigured for the Gree
 
 `docker-compose up -d --build`
 
+You can now access a web interface for some services:
+
+1. MinIO: http://localhost:9000/
+2. Flink UI: http://localhost:8081/
+
 ## SQL Client
 
 `./client.sh`
