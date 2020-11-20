@@ -46,6 +46,18 @@ shadowJar {
     mergeServiceFiles()
 }
 
+jar {
+    enabled = false
+    dependsOn(shadowJar { classifier = null })
+}
+
+task copyToDocker(type: Copy) {
+    from jar
+    into "${rootDir}/testing/images/client/jars"
+}
+
+jar.finalizedBy copyToDocker
+
 dependencies {
     compileOnly "org.apache.flink:flink-table-common:${verFlink}"
     compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${verFlink}"

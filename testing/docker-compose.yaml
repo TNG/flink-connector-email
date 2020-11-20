@@ -1,0 +1,64 @@
+version: "3"
+services:
+  sql:
+    image: buerki/flink-connector-imap-client
+    build: ./images/client
+    command: "tail -f /dev/null"
+    depends_on:
+      - jobmanager
+      - minio
+      - greenmail
+    links:
+      - greenmail:greenmail
+    environment:
+      FLINK_JOBMANAGER_HOST: "jobmanager"
+      ZOOKEEPER_CONNECT: "zookeeper"
+  jobmanager:
+    image: buerki/flink-connector-imap-flink
+    build: ./images/flink
+    hostname: jobmanager
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+  taskmanager:
+    image: buerki/flink-connector-imap-flink
+    build: ./images/flink
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: "jobmanager"
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+  minio:
+    image: minio/minio:latest
+    entrypoint: sh
+    command: -c '/usr/bin/minio server /data'
+    environment:
+      MINIO_ACCESS_KEY: "minioaccesskey"
+      MINIO_SECRET_KEY: "miniosecretkey"
+    expose:
+      - "9000"
+    ports:
+      - "9000:9000"
+  greenmail:
+    image: greenmail/standalone:1.6.0
+    ports:
+      - "3025:3025" # SMTP
+      - "3143:3143" # IMAP
+    environment:
+      GREENMAIL_OPTS: >
+        -Dgreenmail.setup.test.all
+        -Dgreenmail.hostname=0.0.0.0
+        -Dgreenmail.users=alice:alice@acme.org,bob:bob@acme.org
