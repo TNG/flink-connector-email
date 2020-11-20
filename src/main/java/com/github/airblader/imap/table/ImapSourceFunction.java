@@ -149,6 +149,8 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
       if (watermark != null) {
         ctx.emitWatermark(new Watermark(watermark.toEpochMilli()));
       }
+
+      ctx.markAsTemporarilyIdle();
     }
   }
 
