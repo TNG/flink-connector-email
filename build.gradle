@@ -48,7 +48,7 @@ shadowJar {
 
 jar {
     enabled = false
-    dependsOn(shadowJar { classifier = null })
+    dependsOn(shadowJar)
 }
 
 task copyToDocker(type: Copy) {
