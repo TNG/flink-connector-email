@@ -1,7 +1,6 @@
 package com.github.airblader.imap.table;
 
 import java.util.Arrays;
-import lombok.var;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.DynamicTableSource;

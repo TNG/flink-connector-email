@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import lombok.experimental.UtilityClass;
-import lombok.var;
 import org.apache.flink.table.data.*;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 

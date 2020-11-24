@@ -2,7 +2,6 @@ package com.github.airblader;
 
 import java.util.function.Function;
 import lombok.experimental.UtilityClass;
-import lombok.var;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.api.ValidationException;

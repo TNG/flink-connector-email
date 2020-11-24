@@ -6,7 +6,6 @@ import static com.github.airblader.ConfigUtils.validateOptionOrEnv;
 import com.github.airblader.imap.ScanMode;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.var;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.connector.source.DynamicTableSource;

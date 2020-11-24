@@ -9,7 +9,6 @@ import jakarta.mail.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.table.data.GenericRowData;

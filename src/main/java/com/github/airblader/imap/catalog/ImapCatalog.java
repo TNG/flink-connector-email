@@ -11,7 +11,6 @@ import jakarta.mail.Store;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.WatermarkSpec;

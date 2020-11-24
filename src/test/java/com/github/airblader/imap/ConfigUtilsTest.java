@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import lombok.var;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.ValidationException;
