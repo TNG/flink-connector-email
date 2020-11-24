@@ -115,7 +115,12 @@ public class ImapCatalog implements Catalog {
   public List<String> listTables(String databaseName)
       throws DatabaseNotExistException, CatalogException {
     try {
-      return Arrays.stream(store.getDefaultFolder().list("*"))
+      var defaultFolder = store.getDefaultFolder();
+      if (!defaultFolder.isOpen()) {
+        defaultFolder.open(Folder.READ_ONLY);
+      }
+
+      return Arrays.stream(defaultFolder.list("*"))
           .filter(
               folder -> {
                 try {
