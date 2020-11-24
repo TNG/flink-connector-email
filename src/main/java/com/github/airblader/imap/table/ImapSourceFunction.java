@@ -67,7 +67,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     }
 
     running = true;
-    if (connectorOptions.getMode() == ScanMode.ALL) {
+    if (connectorOptions.getMode().isOneOf(ScanMode.ALL, ScanMode.UID)) {
       fetchExistingMessages(ctx);
     }
 
@@ -101,6 +101,11 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private void fetchExistingMessages(SourceContext<RowData> ctx) throws MessagingException {
     var currentNum = 1;
+
+    if (connectorOptions.getScanFromUID() != null) {
+      var startMessage = folder.getMessageByUID(connectorOptions.getScanFromUID());
+      currentNum = startMessage.getMessageNumber();
+    }
 
     // We need to loop to ensure we're not missing any messages coming in while we're processing
     // these.

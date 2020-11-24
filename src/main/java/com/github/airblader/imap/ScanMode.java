@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ScanMode {
   ALL("all"),
-  LATEST("latest");
+  LATEST("latest"),
+  UID("uid");
 
   private final String value;
 
@@ -25,5 +26,15 @@ public enum ScanMode {
     }
 
     throw new IllegalArgumentException("Unknown mode: " + value);
+  }
+
+  public boolean isOneOf(ScanMode... scanModes) {
+    for (ScanMode scanMode : scanModes) {
+      if (this == scanMode) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

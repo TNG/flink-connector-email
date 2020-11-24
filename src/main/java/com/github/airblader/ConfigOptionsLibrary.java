@@ -61,7 +61,12 @@ public class ConfigOptionsLibrary {
           .stringType()
           .defaultValue("latest")
           .withDescription(
-              "'all' = Initially fetch all emails in the folder, 'latest' = Only observe changes in the folder");
+              "'all' = Initially fetch all emails in the folder, 'latest' = Only observe changes in the folder, 'uid' = Start from specified message UID");
+  public static final ConfigOption<Long> SCAN_FROM_UID =
+      ConfigOptions.key("scan.startup.uid")
+          .longType()
+          .noDefaultValue()
+          .withDescription("Read from the specified UID, requires startup mode 'uid'");
   public static final ConfigOption<Duration> CONNECTION_TIMEOUT =
       ConfigOptions.key("scan.startup.timeout")
           .durationType()
@@ -130,6 +135,7 @@ public class ConfigOptionsLibrary {
           ENV_PASSWORD,
           SSL,
           MODE,
+          SCAN_FROM_UID,
           CONNECTION_TIMEOUT,
           BATCH_SIZE,
           IDLE,

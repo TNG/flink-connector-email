@@ -17,6 +17,7 @@ public class ImapSourceOptions extends ImapCatalogOptions implements Serializabl
 
   private final String folder;
   private final ScanMode mode;
+  private final Long scanFromUID;
   private final int batchSize;
   private final boolean idle;
   private final boolean heartbeat;

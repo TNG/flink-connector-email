@@ -57,6 +57,7 @@ public class ImapTableSourceFactory implements DynamicTableSourceFactory {
             .ssl(factoryHelper.getOptions().get(SSL))
             .folder(factoryHelper.getOptions().get(FOLDER))
             .mode(scanMode)
+            .scanFromUID(factoryHelper.getOptions().get(SCAN_FROM_UID))
             .connectionTimeout(factoryHelper.getOptions().get(CONNECTION_TIMEOUT))
             .batchSize(factoryHelper.getOptions().get(BATCH_SIZE))
             .idle(factoryHelper.getOptions().get(IDLE))
