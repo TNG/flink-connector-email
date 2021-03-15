@@ -116,9 +116,6 @@ public class ImapCatalog implements Catalog {
       throws DatabaseNotExistException, CatalogException {
     try {
       var defaultFolder = store.getDefaultFolder();
-      if (!defaultFolder.isOpen()) {
-        defaultFolder.open(Folder.READ_ONLY);
-      }
 
       return Arrays.stream(defaultFolder.list("*"))
           .filter(
