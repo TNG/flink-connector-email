@@ -92,7 +92,7 @@ public class ImapCatalog implements Catalog {
   @Override
   public void createDatabase(String name, CatalogDatabase database, boolean ignoreIfExists)
       throws DatabaseAlreadyExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Databases cannot be created in the IMAP catalog");
   }
 
   @Override
@@ -102,18 +102,22 @@ public class ImapCatalog implements Catalog {
       throw new DatabaseNotExistException(name, name);
     }
 
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Databases cannot be dropped in the IMAP catalog");
   }
 
   @Override
   public void alterDatabase(String name, CatalogDatabase newDatabase, boolean ignoreIfNotExists)
       throws DatabaseNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Tables cannot be altered in the IMAP catalog");
   }
 
   @Override
   public List<String> listTables(String databaseName)
       throws DatabaseNotExistException, CatalogException {
+    if (!databaseExists(databaseName)) {
+      throw new DatabaseNotExistException(name, databaseName);
+    }
+
     try {
       var defaultFolder = store.getDefaultFolder();
 
@@ -192,25 +196,25 @@ public class ImapCatalog implements Catalog {
   @Override
   public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists)
       throws TableNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Tables cannot be dropped in the IMAP catalog");
   }
 
   @Override
   public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists)
       throws TableNotExistException, TableAlreadyExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Tables cannot be renamed in the IMAP catalog");
   }
 
   @Override
   public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
       throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Tables cannot be created in the IMAP catalog");
   }
 
   @Override
   public void alterTable(ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists)
       throws TableNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Tables cannot be altered in the IMAP catalog");
   }
 
   @Override
@@ -254,7 +258,7 @@ public class ImapCatalog implements Catalog {
   @Override
   public boolean partitionExists(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
       throws CatalogException {
-    throw new CatalogException("Unsupported operation");
+    return false;
   }
 
   @Override
@@ -310,20 +314,20 @@ public class ImapCatalog implements Catalog {
   public void createFunction(
       ObjectPath functionPath, CatalogFunction function, boolean ignoreIfExists)
       throws FunctionAlreadyExistException, DatabaseNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Functions are not supported in the IMAP catalog");
   }
 
   @Override
   public void alterFunction(
       ObjectPath functionPath, CatalogFunction newFunction, boolean ignoreIfNotExists)
       throws FunctionNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Functions are not supported in the IMAP catalog");
   }
 
   @Override
   public void dropFunction(ObjectPath functionPath, boolean ignoreIfNotExists)
       throws FunctionNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Functions are not supported in the IMAP catalog");
   }
 
   @Override
@@ -356,14 +360,14 @@ public class ImapCatalog implements Catalog {
   public void alterTableStatistics(
       ObjectPath tablePath, CatalogTableStatistics tableStatistics, boolean ignoreIfNotExists)
       throws TableNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Table statistics are not supported in the IMAP catalog");
   }
 
   @Override
   public void alterTableColumnStatistics(
       ObjectPath tablePath, CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
       throws TableNotExistException, CatalogException, TablePartitionedException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Table column statistics are not supported in the IMAP catalog");
   }
 
   @Override
@@ -373,7 +377,7 @@ public class ImapCatalog implements Catalog {
       CatalogTableStatistics partitionStatistics,
       boolean ignoreIfNotExists)
       throws PartitionNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Partition statistics are not supported in the IMAP catalog");
   }
 
   @Override
@@ -383,6 +387,6 @@ public class ImapCatalog implements Catalog {
       CatalogColumnStatistics columnStatistics,
       boolean ignoreIfNotExists)
       throws PartitionNotExistException, CatalogException {
-    throw new CatalogException("Unsupported operation");
+    throw new CatalogException("Partition column statistics are not supported in the IMAP catalog");
   }
 }
