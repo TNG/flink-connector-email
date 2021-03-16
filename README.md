@@ -38,7 +38,7 @@ All catalog options are forwarded to the IMAP connector in the tables. The catal
 following properties:
 
 Property | Type | Default | Description
----------------------------------------
+---------|------|---------|------------
 host | string | (none) | Hostname of the IMAP server
 host.env | string | (none) | Environment variable specifying the hostname of the IMAP server (overrides `host`)
 port | int | (inferred) | Port of the IMAP server 
@@ -67,7 +67,7 @@ The IMAP connector exposes a specific folder on the IMAP server as a table. The 
 properties are supported:
 
 Property | Type | Default | Description
----------------------------------------
+---------|------|---------|------------
 host | string | (none) | Hostname of the IMAP server
 host.env | string | (none) | Environment variable specifying the hostname of the IMAP server (overrides `host`)
 port | int | (inferred) | Port of the IMAP server
