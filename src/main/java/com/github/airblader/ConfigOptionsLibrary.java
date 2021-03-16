@@ -76,7 +76,7 @@ public class ConfigOptionsLibrary {
       ConfigOptions.key("scan.startup.batch-size")
           .intType()
           .defaultValue(25)
-          .withDescription("Batch size when using startup mode 'all'");
+          .withDescription("Batch size when using startup mode 'all' or 'uid'");
   public static final ConfigOption<Boolean> IDLE =
       ConfigOptions.key("scan.idle")
           .booleanType()
