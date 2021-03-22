@@ -333,7 +333,16 @@ public class ImapCatalog implements Catalog {
   @Override
   public CatalogTableStatistics getTableStatistics(ObjectPath tablePath)
       throws TableNotExistException, CatalogException {
-    return CatalogTableStatistics.UNKNOWN;
+    if (!tableExists(tablePath)) {
+      throw new TableNotExistException(name, tablePath);
+    }
+
+    try {
+      var messages = store.getFolder(tablePath.getObjectName()).getMessageCount();
+      return new CatalogTableStatistics(messages, -1, -1, -1);
+    } catch (MessagingException e) {
+      return CatalogTableStatistics.UNKNOWN;
+    }
   }
 
   @Override
