@@ -1,8 +1,9 @@
 ext {
     verFlink = "1.12.2"
     verOkHttp = "4.8.0"
-    verJakarta = "2.0.0"
+    verJakarta = "2.0.1"
     verJUnit = "4.12"
+    varGreenMail = "2.0.0-alpha-1"
     verAssertJ = "3.18.0"
     verDataprovider = "1.13.1"
     verLombok = "1.18.16"

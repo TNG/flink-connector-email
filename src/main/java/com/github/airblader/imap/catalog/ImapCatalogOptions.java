@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class ImapCatalogOptions implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -70,8 +70,10 @@ public class ImapCatalogOptions implements Serializable {
       properties.put(ConfigOptionsLibrary.PASSWORD.key(), password);
     }
     properties.put(ConfigOptionsLibrary.SSL.key(), String.valueOf(ssl));
-    properties.put(
-        ConfigOptionsLibrary.CONNECTION_TIMEOUT.key(), formatWithHighestUnit(connectionTimeout));
+    if (connectionTimeout != null) {
+      properties.put(
+          ConfigOptionsLibrary.CONNECTION_TIMEOUT.key(), formatWithHighestUnit(connectionTimeout));
+    }
 
     return properties;
   }
