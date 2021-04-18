@@ -1,7 +1,6 @@
 plugins {
     id "java"
     id "com.diffplug.gradle.spotless" version "4.3.0"
-    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
 apply from: "${rootDir}/dependencies.gradle"
@@ -35,22 +34,6 @@ configurations {
     testImplementation.extendsFrom compileOnly
 }
 
-shadowJar {
-    configurations = [project.configurations.bundledJars]
-    relocate "okhttp3", "com.github.airblader.shaded.okhttp3"
-    relocate "okio", "com.github.airblader.shaded.okio"
-    relocate "com.sun.activation", "com.github.airblader.shaded.com.sun.activation"
-    relocate "com.sun.mail", "com.github.airblader.shaded.com.sun.mail"
-    relocate "jakarta", "com.github.airblader.shaded.jakarta"
-
-    mergeServiceFiles()
-}
-
-jar {
-    enabled = false
-    dependsOn(shadowJar)
-}
-
 task copyToDocker(type: Copy) {
     from jar
     into "${rootDir}/testing/images/client/jars"
@@ -61,8 +44,8 @@ jar.finalizedBy copyToDocker
 dependencies {
     compileOnly "org.apache.flink:flink-table-common:${verFlink}"
     compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${verFlink}"
-    bundledJars "com.squareup.okhttp3:okhttp:${verOkHttp}"
-    bundledJars "com.sun.mail:jakarta.mail:${verJakarta}"
+    implementation "com.squareup.okhttp3:okhttp:${verOkHttp}"
+    implementation "com.sun.mail:jakarta.mail:${verJakarta}"
 
     testCompile "junit:junit:${verJUnit}"
     testImplementation "org.assertj:assertj-core:${verAssertJ}"
