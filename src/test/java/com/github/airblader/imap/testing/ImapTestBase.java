@@ -104,34 +104,35 @@ public class ImapTestBase {
     tEnv.executeSql(String.format("CREATE TABLE %s (%s) WITH (%s)", name, schema, writtenOptions));
   }
 
-  public List<Row> collectRows(TableResult tableResult, int expectedRows) throws Exception {
-    return collectRows(tableResult, expectedRows, DEFAULT_DURATION);
+  public List<Row> collectRowUpdates(TableResult tableResult, int expectedRowUpdates)
+      throws Exception {
+    return collectRowUpdates(tableResult, expectedRowUpdates, DEFAULT_DURATION);
   }
 
   /**
-   * Collects at most {@param expectedRows} rows, with a timeout of {@param maxTime}.
+   * Collects at most {@param expectedRowUpdates} rows, with a timeout of {@param maxTime}.
    *
    * <p>If the given number of rows have been collected, it stops collecting, which means unintended
    * further rows will not be collected. If fewer than expected rows are returned, it fails the
    * test.
    */
-  public List<Row> collectRows(TableResult tableResult, int expectedRows, Duration maxTime)
-      throws Exception {
+  public List<Row> collectRowUpdates(
+      TableResult tableResult, int expectedRowUpdates, Duration maxTime) throws Exception {
     var rows = new ArrayList<Row>();
     try (var it = tableResult.collect()) {
-      getCollectorThread(it, rows, () -> rows.size() >= expectedRows).start();
+      getCollectorThread(it, rows, () -> rows.size() >= expectedRowUpdates).start();
 
       var watch = Stopwatch.createStarted();
-      while (rows.size() < expectedRows
+      while (rows.size() < expectedRowUpdates
           && watch.elapsed(TimeUnit.MILLISECONDS) < maxTime.toMillis()) {
         Thread.sleep(50L);
       }
     }
 
-    if (rows.size() < expectedRows) {
+    if (rows.size() < expectedRowUpdates) {
       fail(
           "%s ms have passed, but only %d of expected %d rows have been returned",
-          maxTime.toMillis(), rows.size(), expectedRows);
+          maxTime.toMillis(), rows.size(), expectedRowUpdates);
     }
 
     return rows;
@@ -141,7 +142,7 @@ public class ImapTestBase {
    * Waits for the in {@param maxTime} specified amount of time while collecting results before
    * returning them.
    */
-  public List<Row> collectRows(TableResult tableResult, Duration maxTime) throws Exception {
+  public List<Row> collectRowUpdates(TableResult tableResult, Duration maxTime) throws Exception {
     var rows = new ArrayList<Row>();
     try (var it = tableResult.collect()) {
       getCollectorThread(it, rows, () -> false).start();

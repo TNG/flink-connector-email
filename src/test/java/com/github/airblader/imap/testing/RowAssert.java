@@ -10,6 +10,10 @@ public class RowAssert extends AbstractAssert<RowAssert, Row> {
     super(row, selfType);
   }
 
+  public RowAssert isEqualTo(Object value) {
+    return isEqualTo(new Object[] {value});
+  }
+
   public RowAssert isEqualTo(Object... values) {
     if (values.length != actual.getArity()) {
       throw failure("Expected arity %d, but got %d", values.length, actual.getArity());
