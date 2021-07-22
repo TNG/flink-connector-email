@@ -154,8 +154,8 @@ public class ImapCatalog implements Catalog {
         TableSchema.builder()
             .field("uid", new AtomicDataType(new BigIntType(false)))
             .field("subject", DataTypes.STRING())
-            .field("sent", DataTypes.TIMESTAMP())
-            .field("received", DataTypes.TIMESTAMP())
+            .field("sent", DataTypes.TIMESTAMP(3))
+            .field("received", DataTypes.TIMESTAMP(3))
             .field("to", DataTypes.ARRAY(DataTypes.STRING()))
             .field("cc", DataTypes.ARRAY(DataTypes.STRING()))
             .field("bcc", DataTypes.ARRAY(DataTypes.STRING()))
@@ -175,7 +175,7 @@ public class ImapCatalog implements Catalog {
             .field("draft", DataTypes.BOOLEAN())
             .field("answered", DataTypes.BOOLEAN())
             .primaryKey("uid")
-            .watermark(new WatermarkSpec("received", "received", DataTypes.TIMESTAMP()))
+            .watermark(new WatermarkSpec("received", "received", DataTypes.TIMESTAMP(3)))
             .build();
 
     var properties = catalogOptions.toProperties();

@@ -1,14 +1,8 @@
 package com.github.airblader.imap.table;
 
-import static com.github.airblader.imap.ImapUtils.getImapProperties;
-import static com.github.airblader.imap.table.MessageUtils.*;
-
 import com.github.airblader.imap.ScanMode;
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.*;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.var;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
@@ -19,17 +13,17 @@ import org.apache.flink.table.data.TimestampData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.github.airblader.imap.ImapUtils.getImapProperties;
+import static com.github.airblader.imap.table.MessageUtils.*;
+
 public class ImapSourceFunction extends RichSourceFunction<RowData> {
   private final ImapSourceOptions connectorOptions;
-  private final List<String> fieldNames;
+  private final List<String> columnNames;
   private final DataType rowType;
-
-  public ImapSourceFunction(
-      ImapSourceOptions connectorOptions, List<String> fieldNames, DataType rowType) {
-    this.connectorOptions = connectorOptions;
-    this.fieldNames = fieldNames.stream().map(String::toUpperCase).collect(Collectors.toList());
-    this.rowType = rowType;
-  }
 
   private transient volatile boolean running = false;
   private transient Store store;
@@ -38,6 +32,15 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private volatile boolean supportsIdle = true;
   private FetchProfile fetchProfile;
+
+  public ImapSourceFunction(
+      ImapSourceOptions connectorOptions,
+      List<String> columnNames,
+      DataType rowType) {
+    this.connectorOptions = connectorOptions;
+    this.columnNames = columnNames.stream().map(String::toUpperCase).collect(Collectors.toList());
+    this.rowType = rowType;
+  }
 
   @Override
   public void run(SourceContext<RowData> ctx) throws Exception {
@@ -157,13 +160,13 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
 
   private void collectMessage(SourceContext<RowData> ctx, RowKind rowKind, Message message)
       throws MessagingException {
-    var row = new GenericRowData(fieldNames.size());
+    var row = new GenericRowData(columnNames.size());
     row.setRowKind(rowKind);
 
-    for (int i = 0; i < fieldNames.size(); i++) {
+    for (int i = 0; i < columnNames.size(); i++) {
       var typeRoot = rowType.getChildren().get(i).getLogicalType().getTypeRoot();
 
-      switch (fieldNames.get(i)) {
+      switch (columnNames.get(i)) {
         case "UID":
           row.setField(i, folder.getUID(message));
           break;
@@ -235,7 +238,7 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
           row.setField(i, message.getFlags().contains(Flags.Flag.ANSWERED));
           break;
         default:
-          throw new ImapSourceException("Unknown field name: " + fieldNames.get(i));
+          throw new ImapSourceException("Unknown field name: " + columnNames.get(i));
       }
     }
 
@@ -246,17 +249,17 @@ public class ImapSourceFunction extends RichSourceFunction<RowData> {
     var fetchProfile = new FetchProfile();
     fetchProfile.add(FetchProfile.Item.ENVELOPE);
 
-    if (fieldNames.contains("CONTENT_TYPE") || fieldNames.contains("CONTENT")) {
+    if (columnNames.contains("CONTENT_TYPE") || columnNames.contains("CONTENT")) {
       fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
     }
 
-    if (fieldNames.contains("BYTES")) {
+    if (columnNames.contains("BYTES")) {
       fetchProfile.add(FetchProfile.Item.SIZE);
     }
 
-    if (fieldNames.contains("SEEN")
-        || fieldNames.contains("DRAFT")
-        || fieldNames.contains("ANSWERED")) {
+    if (columnNames.contains("SEEN")
+        || columnNames.contains("DRAFT")
+        || columnNames.contains("ANSWERED")) {
       fetchProfile.add(FetchProfile.Item.FLAGS);
     }
 

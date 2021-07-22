@@ -1,6 +1,5 @@
 package com.github.airblader.imap.table;
 
-import java.util.Arrays;
 import lombok.var;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -10,6 +9,8 @@ import org.apache.flink.table.connector.source.SourceFunctionProvider;
 import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushDown;
 import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.types.RowKind;
+
+import java.util.Arrays;
 
 public class ImapTableSource implements ScanTableSource, SupportsProjectionPushDown {
   private final ImapSourceOptions connectorOptions;
@@ -31,7 +32,7 @@ public class ImapTableSource implements ScanTableSource, SupportsProjectionPushD
   }
 
   @Override
-  public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
+  public ScanRuntimeProvider getScanRuntimeProvider(ScanContext scanContext) {
     var fieldNames = Arrays.asList(schema.getFieldNames());
     var rowType = schema.toRowDataType();
 
