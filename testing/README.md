@@ -32,5 +32,5 @@ You can send an email using
 
 ```
 # bob -> alice
-echo "Message" | mailx -Sv15-compat -Smta=smtp://bob:1234@localhost:3025 -s"Subject" alice@acme.org
+echo "Message" | mailx -Sv15-compat -Smta=smtp://bob:bob@localhost:3025 -s"Subject" alice@acme.org
 ```

@@ -1,5 +1,5 @@
 ext {
-    verFlink = "1.12.2"
+    verFlink = "1.13.1"
     verOkHttp = "4.8.0"
     verJakarta = "2.0.0"
     verJUnit = "4.12"
