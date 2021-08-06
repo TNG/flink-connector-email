@@ -8,6 +8,7 @@ The connectors are written for Flink's Table API and SQL. They are not meant to 
 DataStream API.
 
 > :warning: This project is not considered production-ready.
+> It is currently intended to be more of a playground project.
 
 # Getting Started
 
