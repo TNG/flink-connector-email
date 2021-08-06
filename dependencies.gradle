@@ -1,9 +1,0 @@
-ext {
-    verFlink = "1.13.1"
-    verOkHttp = "4.8.0"
-    verJakarta = "2.0.0"
-    verJUnit = "4.12"
-    verAssertJ = "3.18.0"
-    verDataprovider = "1.13.1"
-    verLombok = "1.18.16"
-}

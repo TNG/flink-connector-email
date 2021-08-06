@@ -1,18 +1,13 @@
 plugins {
     id "java"
-    id "com.diffplug.gradle.spotless" version "4.3.0"
-    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.diffplug.spotless" version "5.14.2"
 }
 
-apply from: "${rootDir}/dependencies.gradle"
+group "com.tngtech"
+version "0.1-SNAPSHOT"
 
-allprojects {
-    group "com.github.airblader"
-    version "1.0-SNAPSHOT"
-
-    repositories {
-        mavenCentral()
-    }
+repositories {
+    mavenCentral()
 }
 
 java {
@@ -20,59 +15,82 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.2"
+}
+
 spotless {
     java {
         importOrder()
         removeUnusedImports()
 
-        googleJavaFormat()
+        prettier([
+                "prettier"            : "2.0.5",
+                "prettier-plugin-java": "0.8.0"
+        ]).config([
+                "parser"  : "java",
+                "tabWidth": 4
+        ])
     }
 }
 
 configurations {
-    bundledJars
-
-    testImplementation.extendsFrom compileOnly
-}
-
-shadowJar {
-    configurations = [project.configurations.bundledJars]
-    relocate "okhttp3", "com.github.airblader.shaded.okhttp3"
-    relocate "okio", "com.github.airblader.shaded.okio"
-    relocate "com.sun.activation", "com.github.airblader.shaded.com.sun.activation"
-    relocate "com.sun.mail", "com.github.airblader.shaded.com.sun.mail"
-    relocate "jakarta", "com.github.airblader.shaded.jakarta"
-
-    mergeServiceFiles()
+    extraLibs
 }
 
 jar {
-    enabled = false
-    dependsOn(shadowJar)
+    enabled = true
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 task copyToDocker(type: Copy) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from jar
     into "${rootDir}/testing/images/client/jars"
 }
 
 jar.finalizedBy copyToDocker
 
-dependencies {
-    compileOnly "org.apache.flink:flink-table-common:${verFlink}"
-    compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${verFlink}"
-    bundledJars "com.squareup.okhttp3:okhttp:${verOkHttp}"
-    bundledJars "com.sun.mail:jakarta.mail:${verJakarta}"
+clean.doFirst {
+    delete "${rootDir}/testing/images/client/jars"
+}
 
-    testCompile "junit:junit:${verJUnit}"
-    testImplementation "org.assertj:assertj-core:${verAssertJ}"
-    testImplementation "com.tngtech.java:junit-dataprovider:${verDataprovider}"
+ext {
+    flink = "1.13.1"
+    lombok = "1.18.20"
+    greenmail = "2.0.0-alpha-1"
+}
+
+dependencies {
+    compileOnly "org.apache.flink:flink-table-common:${flink}"
+    compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${flink}"
+
+    extraLibs "com.squareup.okhttp3:okhttp:4.9.1"
+    extraLibs "com.sun.mail:jakarta.mail:2.0.1"
 
     // Lombok
-    compileOnly "org.projectlombok:lombok:${verLombok}"
-    annotationProcessor "org.projectlombok:lombok:${verLombok}"
-    testCompileOnly "org.projectlombok:lombok:${verLombok}"
-    testAnnotationProcessor "org.projectlombok:lombok:${verLombok}"
+    compileOnly "org.projectlombok:lombok:${lombok}"
+    annotationProcessor "org.projectlombok:lombok:${lombok}"
+    testCompileOnly "org.projectlombok:lombok:${lombok}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombok}"
 
-    configurations.compileOnly.extendsFrom(configurations.bundledJars)
+    // Testing
+
+    testImplementation "org.apache.flink:flink-table-planner-blink_2.12:${flink}"
+    testImplementation "org.apache.flink:flink-streaming-scala_2.12:${flink}"
+    testImplementation "org.apache.flink:flink-test-utils_2.12:${flink}"
+    testImplementation "com.icegreen:greenmail-junit4:${greenmail}"
+    testImplementation "org.awaitility:awaitility-groovy:4.1.0"
+    testImplementation "com.tngtech.junit.dataprovider:junit4-dataprovider:2.8"
+    testImplementation 'org.assertj:assertj-core:3.20.2'
+    testImplementation 'com.tngtech.archunit:archunit-junit4:0.20.1'
+
+    //
+
+    configurations.compile.extendsFrom(configurations.extraLibs)
 }

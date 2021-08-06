@@ -1,93 +1,170 @@
-# flink-connector-imap
+# Introduction
 
-Implements a (source) connector and a custom catalog to connect to IMAP servers in Apache Flink®.
+Connect directly to your email server using Flink. This project provides an IMAP source connector,
+an IMAP catalog, and a SMTP sink connector. These allow you to read (and send) emails directly from
+Flink.
+
+The connectors are written for Flink's Table API and SQL. They are not meant to be used with the
+DataStream API.
 
 > :warning: This project is not considered production-ready.
 
-## Getting Started
+# Getting Started
 
-If you just want to get started quickly and play around with this project, have a look at
-[testing/README.md](https://github.com/Airblader/flink-connector-imap/blob/master/testing/README.md)
-for a self-contained Docker setup.
+We currently do not publish this connector as a package. If you want to try it out, clone this
+repository and take a look
+at [testing/README.md](https://github.com/TNG/flink-connector-email/blob/master/testing/README.md).
+There you will find a self-contained docker-compose setup along with a dockerized local mail server.
 
-Another straight-forward option is to use 
-[Ververica Platform Community Edition](https://www.ververica.com/getting-started). With Ververica
-Platform you can easily deploy applications to a (local or remote) Kubernetes cluster and also
-make use of Apache Flink® SQL in an integrated web user interface. For a five minute, self-contained
-setup take a look at [Ververica Platform Playground](https://github.com/ververica/ververica-platform-playground).
+# Connectors
 
-## Catalog
+## IMAP
 
-`ImapCatalog` is a [Catalog](https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/catalogs.html)
-implementation. It connects to an IMAP server and automatically discovers all available (sub-)folders
-and exposes them as tables in the default database using the IMAP connector.
+Exposes a specific folder on an IMAP server as a table source:
 
-You can also create the catalog using a DDL statement in Apache Flink® SQL:
-
+<!-- @formatter:off -->
+```sql
+CREATE TABLE inbox (
+    uid STRING NOT NULL METADATA,
+    subject STRING METADATA,
+    content STRING
+) WITH (
+    'connector' = 'imap',
+    'host' = '…',
+    'user' = '…',
+    'password' = '…'
+);
 ```
-CREATE CATALOG Mails WITH (
-  'type' = 'imap',
-  'host' = 'imap.acme.org',
-  'user' = 'jon.doe@acme.org',
-  'password' = '…',
-  'ssl' = 'true'
-)
+<!-- @formatter:on -->
+
+Most message information are exposed through metadata. The only information exposed through physical
+columns is the message content itself, which is deserialized using a given format. By default,
+the `raw` format is used, meaning that a single physical column of type `STRING` can be declared to
+contain the content.
+
+### Configuration
+
+Property           | Type     | Required | Default     | Description
+-------------------|----------|----------|-------------|------------
+host               | String   | Yes      |             |
+user               | String   | Yes      |             |
+password           | String   | Yes      |             |
+port               | Integer  |          | (automatic) | Port of the IMAP server. If omitted, the default IMAP port is used.
+ssl                | Boolean  | Yes      | false       | Whether to connect using SSL.
+folder             | String   | Yes      | INBOX       | Name of the IMAP folder to use.
+format             | String   | Yes      | raw         | Format with which to decode the message content.
+mode               | Enum     | Yes      | all         | Set to "new" to only collect new messages arriving, or to "all" to also fetch existing messages.
+offset             | Long     |          |             | If set, existing messages are only read starting from this specified UID. This requires "mode" to be "all".
+batch-size         | Integer  |          | 50          | Defines how many existing messages are queried at a time. This requires "mode" to be "all".
+connection.timeout | Duration |          | 1min        | Timeout when connecting to the server before giving up.
+heartbeat.interval | Duration |          | 15min       | How often to send a heartbeat request to the IMAP server to keep the IDLE connection alive.
+interval           | Duration |          | 1s          | If the IMAP server does not support the IDLE protocol, the connector falls back to polling. This defines the interval with which to do so.
+
+### Metadata
+
+Key         | Type
+------------|---------------------------------------------
+uid         | `BIGINT NOT NULL`
+subject     | `STRING`
+sent        | `TIMESTAMP WITH LOCAL TIMEZONE(3) NOT NULL`
+received    | `TIMESTAMP WITH LOCAL TIMEZONE(3) NOT NULL`
+from        | `ARRAY<STRING>`
+from.first  | `STRING`
+to          | `ARRAY<STRING>`
+to.first    | `STRING`
+cc          | `ARRAY<STRING>`
+bcc         | `ARRAY<STRING>`
+recipients  | `ARRAY<STRING>`
+replyTo     | `ARRAY<STRING>`
+contentType | `STRING`
+sizeInBytes | `INT NOT NULL`
+seen        | `BOOLEAN`
+draft       | `BOOLEAN`
+answered    | `BOOLEAN`
+headers     | `ARRAY<ROW<key STRING, value STRING>>`
+
+## SMTP
+
+Exposes an SMTP server as a table sink, effectively allowing to send emails by writing into the
+sink.
+
+> :warning: This is an early-stage prototype and currently only supports sending plain text emails.
+
+<!-- @formatter:off -->
+```sql
+CREATE TABLE outbox (
+    subject STRING NOT NULL METADATA,
+    `from` ARRAY<STRING> METADATA,
+    `to` ARRAY<STRING> METADATA,
+    content STRING
+) WITH (
+    'connector' = 'smtp',
+    'host' = '…',
+    'user' = '…',
+    'password' = '…'
+);
 ```
+<!-- @formatter:on --> 
 
-All catalog options are forwarded to the IMAP connector in the tables. The catalog supports the
-following properties:
+Most message information can be written through metadata. The only information writable through
+physical columns is the message content itself, which is serialized using a given format. By
+default, the `raw` format is used, meaning that a single physical column of type `STRING` can be
+declared to write the content to.
 
-Property | Type | Default | Description
----------|------|---------|------------
-host | string | (none) | Hostname of the IMAP server
-host.env | string | (none) | Environment variable specifying the hostname of the IMAP server (overrides `host`)
-port | int | (inferred) | Port of the IMAP server 
-port.env | string | (none) | Environment variable specifying the port of the IMAP server (overrides `port`)
-user | string | (none) | Username for authentication
-user.env | string | (none) | Environment variable specifying the username (overrides `user`)
-password | string | (none) | Password for authentication
-password.env | string | (none) | Environment variable specifying the password (overrides `password`)
-ssl | boolean | `true` | Whether to connect using SSL
-scan.startup.timeout | duration | `60s` | Timeout for the socket connection 
+### Configuration
 
-You can set further table-specific properties (see below) using 
-[hints](https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/sql/hints.html):
+Property           | Type     | Required | Default     | Description
+-------------------|----------|----------|-------------|------------
+host               | String   | Yes      |             |
+user               | String   |          |             |
+password           | String   |          |             |
+port               | Integer  |          | (automatic) | Port of the SMTP server. If omitted, the default SMTP port is used.
+ssl                | Boolean  | Yes      | false       | Whether to connect using SSL.
+format             | String   | Yes      | raw         | Format with which to encode the message content.
 
+### Metadata
+
+Key         | Type
+------------|---------------------------------------------
+subject     | `STRING`
+from        | `ARRAY<STRING>`
+to          | `ARRAY<STRING>`
+cc          | `ARRAY<STRING>`
+bcc         | `ARRAY<STRING>`
+replyTo     | `ARRAY<STRING>`
+
+# Catalogs
+
+## IMAP
+
+Lists all folders on the IMAP server and exposes them as table sources using the `imap` source
+connector above.
+
+<!-- @formatter:off -->
+```sql
+CREATE CATALOG mail WITH (
+    'type' = 'imap',
+    'host' = '…',
+    'user' = '…',
+    'password' = '…'
+);
 ```
-SELECT * FROM Mails.default.Inbox /*+ OPTIONS('scan.startup.mode' = 'all') */;
+<!-- @formatter:on --> 
+
+The default (and only) database in an IMAP catalog is called `folders`.
+
+Write operations on the catalog are generally not supported as there is no backing persistence
+layer, but rather the catalog acts directly on the IMAP server. The catalog is useful for quick
+discovery, and the tables can then be stored in a persistent catalog instead.
+
+You can use dynamic table hints to pass any custom options to the source tables in the catalog:
+
+<!-- @formatter:off -->
+```sql
+SELECT * FROM mail.folders.INBOX /*+ OPTIONS ('mode' = 'new') */;
 ```
+<!-- @formatter:on -->
 
-Since the catalog connects directly against the IMAP server and has no persistent storage mechanism
-there is currently no way to create tables and persist these options. However, you can choose to
-use any other catalog implementation and use the IMAP connector directly instead.
+# License
 
-## Connector
-
-The IMAP connector exposes a specific folder on the IMAP server as a table. The following configuration
-properties are supported:
-
-Property | Type | Default | Description
----------|------|---------|------------
-host | string | (none) | Hostname of the IMAP server
-host.env | string | (none) | Environment variable specifying the hostname of the IMAP server (overrides `host`)
-port | int | (inferred) | Port of the IMAP server
-port.env | string | (none) | Environment variable specifying the port of the IMAP server (overrides `port`)
-user | string | (none) | Username for authentication
-user.env | string | (none) | Environment variable specifying the username (overrides `user`)
-password | string | (none) | Password for authentication
-password.env | string | (none) | Environment variable specifying the password (overrides `password`)
-ssl | boolean | `true` | Whether to connect using SSL
-scan.startup.timeout | duration | `60s` | Timeout for the socket connection
-scan.startup.mode | string | `latest` | Use "latest" to fetch only emails which arrive after connecting, "all" to fetch all emails in the folder and "uid" to start at a specific UID
-scan.startup.uid | long | (none) | UID to start fetching from upon connecting, only applicable if `scan.startup.mode` is set to "uid"
-scan.startup.batch-size | int | `25` | Batch size for fetching existing emails when `scan.startup.mode` is "all" or "uid"
-scan.idle | boolean | `true` | Use the IDLE feature instead of polling (automatically falls back to polling)
-scan.interval | duration | `1s` | Interval between polling attempts (only if IDLE is not used)
-scan.deletions | boolean | `false` | Remove emails from the table if they have been deleted from the server
-scan.idle.heartbeat | boolean | `true` | Whether to emit a periodic heartbeat (only if IDLE is used)
-scan.idle.heartbeat.interval | duration | `15min` | How frequently to emit the heartbeat (if enabled)
-scan.format.address | string | `default` | How to format addresses ("default" for the full address, "simple" for only the email address)
-scan.folder | string | `Inbox` | The folder to observe
-
-Note that the IDLE heartbeat interval is chosen with a sane default value, but depending on the IMAP
-implementation of the server, a shorter timeout might be required.
+See `LICENSE`.

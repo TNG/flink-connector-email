@@ -1,33 +1,4 @@
-catalogs:
-  - name: alice
-    type: imap
-    host: greenmail
-    port: 3143
-    user: alice
-    password: alice
-    ssl: false
-  - name: bob
-    type: imap
-    host: greenmail
-    port: 3143
-    user: bob
-    password: bob
-    ssl: false
-
-execution:
-  planner: blink
-  type: streaming
-  result-mode: table
-  parallelism: 1
-  max-parallelism: 2
-  min-idle-state-retention: 0
-  max-idle-state-retention: 0
-  current-catalog: alice
-
-configuration:
-  execution.checkpointing.interval: 500ms
-  table.dynamic-table-options.enabled: true
-
-deployment:
-  type: standalone
-  response-timeout: 2500
+sql-client:
+  verbose: true
+  execution:
+    result-mode: table

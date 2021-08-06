@@ -1,2 +1,3 @@
-com.github.airblader.imap.catalog.ImapCatalogFactory
-com.github.airblader.imap.table.ImapTableSourceFactory
+com.tngtech.flink.connector.email.imap.ImapSourceFactory
+com.tngtech.flink.connector.email.imap.ImapCatalogFactory
+com.tngtech.flink.connector.email.smtp.SmtpSinkFactory
