@@ -13,9 +13,8 @@ DataStream API.
 # Getting Started
 
 We currently do not publish this connector as a package. If you want to try it out, clone this
-repository and take a look
-at [testing/README.md](https://github.com/TNG/flink-connector-email/blob/master/testing/README.md).
-There you will find a self-contained docker-compose setup along with a dockerized local mail server.
+repository and take a look at [testing/README.md](testing/README.md). There you will find a
+self-contained docker-compose setup along with a dockerized local mail server.
 
 # Connectors
 
