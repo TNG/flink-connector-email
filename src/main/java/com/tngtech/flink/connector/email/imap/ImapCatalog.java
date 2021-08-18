@@ -43,23 +43,7 @@ public class ImapCatalog implements Catalog {
 
     @Override
     public void open() throws CatalogException {
-        if (store != null && store.isConnected()) {
-            return;
-        }
-
-        final SessionProperties sessionProperties = new SessionProperties(options);
-        final Session session = Session.getInstance(sessionProperties.getProperties());
-        try {
-            store = session.getStore();
-
-            if (options.usesAuthentication()) {
-                store.connect(options.getUser(), options.getPassword());
-            } else {
-                store.connect("", "");
-            }
-        } catch (MessagingException e) {
-            throw new CatalogException(e.getMessage(), e);
-        }
+        reconnect();
     }
 
     @Override
@@ -76,6 +60,35 @@ public class ImapCatalog implements Catalog {
     @Override
     public Optional<Factory> getFactory() {
         return Optional.of(new ImapSourceFactory());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void reconnect() throws CatalogException {
+        if (store != null && store.isConnected()) {
+            return;
+        }
+
+        if (store == null) {
+            final SessionProperties sessionProperties = new SessionProperties(options);
+            final Session session = Session.getInstance(sessionProperties.getProperties());
+
+            try {
+                store = session.getStore();
+            } catch (MessagingException e) {
+                throw new CatalogException(e.getMessage(), e);
+            }
+        }
+
+        try {
+            if (options.usesAuthentication()) {
+                store.connect(options.getUser(), options.getPassword());
+            } else {
+                store.connect("", "");
+            }
+        } catch (MessagingException e) {
+            throw new CatalogException(e.getMessage(), e);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -164,6 +177,7 @@ public class ImapCatalog implements Catalog {
             throw new DatabaseNotExistException(name, databaseName);
         }
 
+        reconnect();
         try {
             return Arrays.stream(store.getDefaultFolder().list("*"))
                 .filter(
@@ -208,6 +222,7 @@ public class ImapCatalog implements Catalog {
 
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
+        reconnect();
         try {
             return store.getFolder(tablePath.getObjectName()).exists();
         } catch (MessagingException e) {
