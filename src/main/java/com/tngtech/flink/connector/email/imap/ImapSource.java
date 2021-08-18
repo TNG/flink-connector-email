@@ -83,18 +83,22 @@ public class ImapSource extends RichSourceFunction<RowData> {
     public void run(SourceContext<RowData> ctx) throws Exception {
         running = true;
 
-        if (options.getMode() == StartupMode.ALL) {
+        if (options.getMode().isOneOf(StartupMode.CURRENT, StartupMode.ALL)) {
             fetchExistingMessages(ctx);
         }
 
-        folder.addMessageCountListener(new MessageCountAdapter() {
-            @Override
-            public void messagesAdded(MessageCountEvent event) {
-                collectMessages(ctx, event.getMessages());
-            }
-        });
+        if (options.getMode().isOneOf(StartupMode.NEW, StartupMode.ALL)) {
+            folder.addMessageCountListener(new MessageCountAdapter() {
+                @Override
+                public void messagesAdded(MessageCountEvent event) {
+                    collectMessages(ctx, event.getMessages());
+                }
+            });
 
-        enterWaitLoop();
+            enterWaitLoop();
+        } else {
+            running = false;
+        }
     }
 
     @Override

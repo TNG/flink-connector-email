@@ -86,10 +86,21 @@ public class ImapConfigOptions {
     @RequiredArgsConstructor
     public enum StartupMode {
         ALL("all"),
-        NEW("new");
+        NEW("new"),
+        CURRENT("current");
 
         @Getter
         private final String value;
+
+        public boolean isOneOf(StartupMode... modes) {
+            for (StartupMode mode : modes) {
+                if (this == mode) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
 }

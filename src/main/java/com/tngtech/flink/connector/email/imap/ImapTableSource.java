@@ -1,5 +1,6 @@
 package com.tngtech.flink.connector.email.imap;
 
+import com.tngtech.flink.connector.email.imap.ImapConfigOptions.StartupMode;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -43,7 +44,8 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
             : null;
 
         final ImapSource source = new ImapSource(deserializer, options, metadataKeys);
-        return SourceFunctionProvider.of(source, false);
+        final boolean bounded = options.getMode() == StartupMode.CURRENT;
+        return SourceFunctionProvider.of(source, bounded);
     }
 
     @Override
