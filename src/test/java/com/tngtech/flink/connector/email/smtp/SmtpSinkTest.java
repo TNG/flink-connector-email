@@ -27,8 +27,8 @@ public class SmtpSinkTest extends TestBase {
         tEnv.fromValues(schema.toSinkRowDataType(),
             row(
                 "Subject",
-                new String[] {"sender@tngtech.com"},
-                new String[] {"ingo@tngtech.com"},
+                new String[] {"sender@tngtech.test"},
+                new String[] {"ingo@tngtech.test"},
                 "Message Content"
             )
         ).executeInsert("T").await();

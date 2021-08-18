@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ImapSourceTest extends TestBase {
 
-    private static final Tuple2<String, String> LOGIN = Tuple2.of("ingo@tngtech.com", "123");
+    private static final Tuple2<String, String> LOGIN = Tuple2.of("ingo@tngtech.test", "123");
 
     @Override
     public GreenMailConfiguration getGreenmailConfiguration() {
@@ -34,14 +34,15 @@ public class ImapSourceTest extends TestBase {
             Column.physical("content", DataTypes.STRING())
         );
 
-        sendTextEmail("ingo@tngtech.com", "sender@tngtech.com", "Subject", "Message Content", SMTP);
+        sendTextEmail("ingo@tngtech.test", "sender@tngtech.test", "Subject", "Message Content",
+            SMTP);
 
         final List<Row> rows = collect(createImapSource("T", schema, getLogin()).execute(), 1);
 
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).getField(0)).isEqualTo("Subject");
-        assertThat(rows.get(0).getField(1)).isEqualTo("sender@tngtech.com");
-        assertThat(rows.get(0).getField(2)).isEqualTo("ingo@tngtech.com");
+        assertThat(rows.get(0).getField(1)).isEqualTo("sender@tngtech.test");
+        assertThat(rows.get(0).getField(2)).isEqualTo("ingo@tngtech.test");
         assertThat(rows.get(0).getField(3)).isEqualTo("Message Content");
     }
 
