@@ -1,4 +1,0 @@
-sql-client:
-  verbose: true
-  execution:
-    result-mode: table

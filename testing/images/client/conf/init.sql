@@ -1,3 +1,4 @@
+SET 'sql-client.verbose' = 'true';
 SET 'table.dynamic-table-options.enabled' = 'true';
 
 CREATE CATALOG jon WITH (

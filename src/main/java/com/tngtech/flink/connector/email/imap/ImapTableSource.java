@@ -34,7 +34,7 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
 
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext context) {
-        // If the produced row type is empty, no physical columns have been declared and we don't
+        // If the produced row type is empty, no physical columns have been declared, and we don't
         // need to deserialize anything.
         final boolean readsContent = !rowType.getChildren().isEmpty();
 
