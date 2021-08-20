@@ -263,6 +263,10 @@ public class ImapSource extends RichSourceFunction<RowData> {
 
         synchronized (ctx.getCheckpointLock()) {
             for (Message message : messages) {
+                if (message == null) {
+                    continue;
+                }
+
                 try {
                     collectMessage(ctx, message);
                 } catch (Exception e) {
