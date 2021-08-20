@@ -35,15 +35,14 @@ public class ImapSource extends RichSourceFunction<RowData> {
     private final ImapSourceOptions options;
     private final List<ReadableMetadata> metadataKeys;
 
-    private transient volatile boolean running;
-
     private transient Store store;
     private transient IMAPFolder folder;
     private transient Heartbeat heartbeat;
+    private transient FetchProfile fetchProfile;
+    private transient long nextUIDOnOpen;
 
+    private transient volatile boolean running;
     private volatile boolean supportsIdle = true;
-
-    private FetchProfile fetchProfile;
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -80,21 +79,24 @@ public class ImapSource extends RichSourceFunction<RowData> {
     }
 
     @Override
-    public void run(SourceContext<RowData> ctx) throws Exception {
+    public void run(SourceContext<RowData> ctx) {
         running = true;
 
-        if (options.getMode().isOneOf(StartupMode.CURRENT, StartupMode.ALL)) {
-            fetchExistingMessages(ctx);
-        }
-
-        if (options.getMode().isOneOf(StartupMode.NEW, StartupMode.ALL)) {
+        final boolean readNewMessages = options.getMode().isOneOf(StartupMode.NEW, StartupMode.ALL);
+        if (readNewMessages) {
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
                 public void messagesAdded(MessageCountEvent event) {
                     collectMessages(ctx, event.getMessages());
                 }
             });
+        }
 
+        if (options.getMode().isOneOf(StartupMode.CURRENT, StartupMode.ALL)) {
+            fetchExistingMessages(ctx, nextUIDOnOpen - 1);
+        }
+
+        if (readNewMessages) {
             enterWaitLoop();
         } else {
             running = false;
@@ -150,6 +152,15 @@ public class ImapSource extends RichSourceFunction<RowData> {
         if (!folderExists) {
             throw new ImapSourceException("Folder " + folder.getName() + " does not exist.");
         }
+
+        try {
+            nextUIDOnOpen = folder.getUIDNext();
+            if (nextUIDOnOpen == -1) {
+                throw new ImapSourceException("The highest UID could not be determined.");
+            }
+        } catch (MessagingException e) {
+            throw new ImapSourceException("Error while determining the highest UID", e);
+        }
     }
 
     private void openFolder() {
@@ -165,13 +176,10 @@ public class ImapSource extends RichSourceFunction<RowData> {
     private FetchProfile getFetchProfile() {
         final FetchProfile fetchProfile = new FetchProfile();
         fetchProfile.add(FetchProfile.Item.ENVELOPE);
+        fetchProfile.add(UIDFolder.FetchProfileItem.UID);
 
         if (contentDeserializer != null || metadataKeys.contains(ReadableMetadata.CONTENT_TYPE)) {
             fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
-        }
-
-        if (metadataKeys.contains(ReadableMetadata.UID)) {
-            fetchProfile.add(UIDFolder.FetchProfileItem.UID);
         }
 
         if (metadataKeys.contains(ReadableMetadata.SIZE)) {
@@ -197,6 +205,7 @@ public class ImapSource extends RichSourceFunction<RowData> {
 
     private void enterWaitLoop() {
         heartbeat = new Heartbeat(folder, options.getHeartbeatInterval());
+        heartbeat.setName("IMAP Heartbeat");
         heartbeat.setDaemon(true);
         heartbeat.start();
 
@@ -229,29 +238,30 @@ public class ImapSource extends RichSourceFunction<RowData> {
         }
     }
 
-    private void fetchExistingMessages(SourceContext<RowData> ctx) throws MessagingException {
-        int currentNum = 1;
+    private void fetchExistingMessages(SourceContext<RowData> ctx, long endUID) {
+        final Thread fetchThread = new Thread(() -> {
+            long batchStartUID = options.getOffset() == null ? 1 : options.getOffset();
+            while (running) {
+                final long batchEndUID =
+                    Math.min(batchStartUID + options.getBatchSize() - 1, endUID);
+                try {
+                    collectMessages(ctx, folder.getMessagesByUID(batchStartUID, batchEndUID));
+                } catch (MessagingException e) {
+                    throw new ImapSourceException(String.format(
+                        "Error while fetching messages (batchStartUID = %d, batchEndUid = %d",
+                        batchStartUID, batchEndUID), e);
+                }
 
-        if (options.getOffset() != null) {
-            final Message startMessage = folder.getMessageByUID(options.getOffset());
-            currentNum = startMessage.getMessageNumber();
-        }
-
-        // We need to loop to ensure we're not missing any messages coming in while we're processing
-        // these.
-        // See https://eclipse-ee4j.github.io/mail/FAQ#addlistener.
-        while (running) {
-            final int numberOfMessages = folder.getMessageCount();
-            if (currentNum > numberOfMessages) {
-                break;
+                batchStartUID = batchEndUID + 1;
+                if (batchStartUID > endUID) {
+                    break;
+                }
             }
+        });
 
-            final int batchEnd =
-                currentNum + Math.min(numberOfMessages - currentNum, options.getBatchSize());
-
-            collectMessages(ctx, folder.getMessages(currentNum, batchEnd));
-            currentNum = batchEnd + 1;
-        }
+        fetchThread.setName(String.format("IMAP Fetcher (endUID = %d)", endUID));
+        fetchThread.setDaemon(true);
+        fetchThread.start();
     }
 
     private void collectMessages(SourceContext<RowData> ctx, Message[] messages) {
