@@ -170,6 +170,10 @@ public class ImapSource extends RichSourceFunction<RowData> {
             fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
         }
 
+        if (metadataKeys.contains(ReadableMetadata.UID)) {
+            fetchProfile.add(UIDFolder.FetchProfileItem.UID);
+        }
+
         if (metadataKeys.contains(ReadableMetadata.SIZE)) {
             fetchProfile.add(FetchProfile.Item.SIZE);
         }
