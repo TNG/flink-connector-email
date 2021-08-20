@@ -69,9 +69,9 @@ subject     | `STRING`
 sent        | `TIMESTAMP WITH LOCAL TIMEZONE(3) NOT NULL`
 received    | `TIMESTAMP WITH LOCAL TIMEZONE(3) NOT NULL`
 from        | `ARRAY<STRING>`
-from.first  | `STRING`
+fromFirst   | `STRING`
 to          | `ARRAY<STRING>`
-to.first    | `STRING`
+toFirst     | `STRING`
 cc          | `ARRAY<STRING>`
 bcc         | `ARRAY<STRING>`
 recipients  | `ARRAY<STRING>`

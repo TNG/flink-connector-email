@@ -144,7 +144,7 @@ public enum ReadableMetadata {
         }),
 
     FROM_FIRST(
-        "from.first",
+        "fromFirst",
         DataTypes.STRING().nullable(),
         new Converter() {
             private static final long serialVersionUID = 1L;
@@ -168,7 +168,7 @@ public enum ReadableMetadata {
         }),
 
     TO_FIRST(
-        "to.first",
+        "toFirst",
         DataTypes.STRING().nullable(),
         new Converter() {
             private static final long serialVersionUID = 1L;
