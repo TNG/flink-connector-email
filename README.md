@@ -54,7 +54,7 @@ ssl                | Boolean  | Yes      | false       | Whether to connect usin
 folder             | String   | Yes      | INBOX       | Name of the IMAP folder to use.
 format             | String   | Yes      | raw         | Format with which to decode the message content.
 mode               | Enum     | Yes      | all         | Set to "new" to only collect new messages arriving (unbounded), "all" to also fetch existing messages (unbounded), or "current" to only fetch existing emails and finish (bounded).
-offset             | Long     |          |             | If set, existing messages are only read starting from this specified UID. This requires "mode" to be "all".
+offset             | Long     |          |             | If set, existing messages are only read starting from this specified UID. This requires "mode" to be "all" or "current".
 batch-size         | Integer  |          | 50          | Defines how many existing messages are queried at a time. This requires "mode" to be "all".
 connection.timeout | Duration |          | 1min        | Timeout when connecting to the server before giving up.
 heartbeat.interval | Duration |          | 15min       | How often to send a heartbeat request to the IMAP server to keep the IDLE connection alive.
