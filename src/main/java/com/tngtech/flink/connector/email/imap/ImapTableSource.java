@@ -1,7 +1,6 @@
 package com.tngtech.flink.connector.email.imap;
 
 import com.tngtech.flink.connector.email.imap.ImapConfigOptions.StartupMode;
-import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -9,9 +8,11 @@ import org.apache.flink.table.connector.format.DecodingFormat;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.SourceFunctionProvider;
+import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushDown;
 import org.apache.flink.table.connector.source.abilities.SupportsReadingMetadata;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.utils.DataTypeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,14 +20,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Internal
-@RequiredArgsConstructor
-class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
+import static org.apache.flink.util.Preconditions.checkNotNull;
 
-    private final DataType rowType;
+@Internal
+class ImapTableSource implements ScanTableSource, SupportsReadingMetadata,
+    SupportsProjectionPushDown {
+
+    private DataType rowType;
     private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
     private final ImapSourceOptions options;
-    private final List<ReadableMetadata> metadataKeys = new ArrayList<>();
+    private List<ReadableMetadata> metadataKeys = new ArrayList<>();
+
+    public ImapTableSource(DataType rowType,
+        DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
+        ImapSourceOptions options) {
+
+        this.rowType = checkNotNull(rowType);
+        this.decodingFormat = decodingFormat;
+        this.options = options;
+    }
 
     @Override
     public ChangelogMode getChangelogMode() {
@@ -51,7 +63,7 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
     @Override
     public DynamicTableSource copy() {
         final ImapTableSource source = new ImapTableSource(rowType, decodingFormat, options);
-        source.metadataKeys.addAll(metadataKeys);
+        source.metadataKeys = new ArrayList<>(metadataKeys);
         return source;
     }
 
@@ -64,6 +76,17 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
     // Abilities
     // ---------------------------------------------------------------------------------------------
 
+
+    @Override
+    public boolean supportsNestedProjection() {
+        return false;
+    }
+
+    @Override
+    public void applyProjection(int[][] projectedFields) {
+        rowType = DataTypeUtils.projectRow(rowType, projectedFields);
+    }
+
     @Override
     public Map<String, DataType> listReadableMetadata() {
         return Arrays.stream(ReadableMetadata.values())
@@ -72,8 +95,8 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata {
 
     @Override
     public void applyReadableMetadata(List<String> metadataKeys, DataType producedDataType) {
-        metadataKeys.stream()
+        this.metadataKeys = metadataKeys.stream()
             .map(ReadableMetadata::ofKey)
-            .forEach(this.metadataKeys::add);
+            .collect(Collectors.toList());
     }
 }
